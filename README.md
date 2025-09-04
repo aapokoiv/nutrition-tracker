@@ -1,1 +1,1 @@
-# nutrition_tracker
+This application is used for tracking daily nutrition intake in everyday life. You can track protein and calories you consume. You can save incredients and meals and their nutritional values for easy use. You can also find what foods other users have added to the database.  
