@@ -3,15 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>Home</title>
 </head>
 <body>
-  <h1>{{ message }}</h1>
-  <p>Nutritions</p>
+  <h1>Welcome! {{ username }}</h1>
+  <h3>Your nutrition intake for today</h3>
+
+  <h5>Protein</h5>
+  <p>Target: { proteinTarget }</p>
+  <p>Current intake: { proteinIntake }</p>
+
+  <h5>Calories</h5>
+  <p>Target: { calorieTarget }</p>
+  <p>Current intake: { calorieIntake }</p>
+
+  <h5>Eaten today</h5>
   <ul>
     {% for food in foods %}
     <li>{{ food }}</li>
     {% endfor %}
   </ul>
+
+
 </body>
 </html>

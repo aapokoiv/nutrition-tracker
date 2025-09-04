@@ -1,5 +1,6 @@
 from flask import Flask
-from flask import render_template
+from flask import render_template, request, redirect
+import db
 
 app = Flask(__name__)
 
