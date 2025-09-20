@@ -10,15 +10,17 @@ def get_connection():
     return con
 
 def execute(sql, params=[]):
-    with get_connection() as con:
-        cur = con.execute(sql, params)
-        con.commit()
-        g.last_insert_id = cur.lastrowid
-        return cur
+    con = get_connection()
+    result = con.execute(sql, params)
+    con.commit()
+    g.last_insert_id = result.lastrowid
+    con.close()
 
 def last_insert_id():
-    return g.last_insert_id
-
+    return g.last_insert_id    
+    
 def query(sql, params=[]):
-    with get_connection() as con:
-        return con.execute(sql, params).fetchall()
+    con = get_connection()
+    result = con.execute(sql, params).fetchall()
+    con.close()
+    return result
