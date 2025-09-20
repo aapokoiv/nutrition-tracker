@@ -14,12 +14,23 @@
   <h3>Your nutrition intake for today</h3>
 
   <h5>Protein</h5>
-  <p>Target: { proteinTarget }</p>
-  <p>Current intake: { proteinIntake }</p>
+  <p>Target: {{ pt }}</p>
+  <p>Current intake: {{ pi }}</p>
+  <form action="{{ url_for('update_protein') }}" method="post">
+    <label for="protein_target">Update protein target:</label><br>
+    <input type="number" name="protein_target" id="protein_target">
+    <button type="submit">Update protein target</button>
+  </form>
 
   <h5>Calories</h5>
-  <p>Target: { calorieTarget }</p>
-  <p>Current intake: { calorieIntake }</p>
+  <p>Target: {{ ct }}</p>
+  <p>Current intake: {{ ci }}</p>
+  <form action="{{ url_for('update_calories') }}" method="post">
+    <label for="calorie_target">Update calorie target:</label><br>
+    <input type="number" name="calorie_target" id="calorie_target">
+    <button type="submit">Update calorie target</button>
+  </form>
+
 
   <h5>Eaten today</h5>
   <ul>

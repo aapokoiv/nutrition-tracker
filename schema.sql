@@ -1,7 +1,9 @@
 CREATE TABLE Users (
     id INTEGER PRIMARY KEY,
     username TEXT UNIQUE,
-    password_hash TEXT
+    password_hash TEXT,
+    protein_target INTEGER,
+    calorie_target INTEGER
 );
 
 CREATE TABLE Incredients (

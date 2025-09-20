@@ -21,7 +21,36 @@ def login_required(f):
 def index():
     messages=get_flashed_messages()
     user = session.get("username")
-    return render_template("index.html", messages=messages)
+
+    sql = "SELECT protein_target, calorie_target FROM users WHERE username = ?"
+    result = db.query(sql, [user])
+    pt = result[0]["protein_target"]
+    ct = result[0]["calorie_target"]
+
+    return render_template("index.html", messages=messages, pt=pt, ct=ct)
+
+
+@app.route("/update-protein", methods=["POST"])
+@login_required
+def update_protein():
+    protein_target = request.form.get("protein_target", type=int)
+
+    sql = "UPDATE users SET protein_target = ? WHERE username = ?"
+    db.execute(sql, [protein_target, session["username"]])
+
+    flash("Protein target updated.")
+    return redirect(url_for("index"))
+
+@app.route("/update-calories", methods=["POST"])
+@login_required
+def update_calories():
+    calorie_target = request.form.get("calorie_target", type=int)
+
+    sql = "UPDATE users SET calorie_target = ? WHERE username = ?"
+    db.execute(sql, [calorie_target, session["username"]])
+
+    flash("Calorie target updated.")
+    return redirect(url_for("index"))
 
 
 # Registeration
