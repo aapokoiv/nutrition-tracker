@@ -6,7 +6,11 @@
   <title>Home</title>
 </head>
 <body>
-  <h1>Welcome! {{ username }}</h1>
+
+  {% for m in messages %}
+  <p>{{ m }}</p>
+  {% endfor %}
+
   <h3>Your nutrition intake for today</h3>
 
   <h5>Protein</h5>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Registeration</title>
+</head>
+
+<body>
+
+  {% for m in messages %}
+    <p>{{ m }}</p>
+  {% endfor %}
+
+  <form action="/create" method="post">
+    <p>
+      Username: <br />
+      <input type="text" name="username" />
+    </p>
+    <p>
+      Password: <br />
+      <input type="password" name="password1" />
+    </p>
+    <p>
+      Password again: <br />
+      <input type="password" name="password2" />
+    </p>
+    <input type="submit" value="Create user" />
+  </form>
+</body>
+
+</html>
