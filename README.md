@@ -12,6 +12,9 @@
 
 ## Installation
 
-Todo
+Download `flask` -library
 
+```
+$ pip install flask
+```
 

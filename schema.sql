@@ -9,23 +9,18 @@ CREATE TABLE Incredients (
     name TEXT,
     protein INTEGER,
     calories INTEGER
-)
+);
 
 CREATE TABLE Foods (
     id INTEGER PRIMARY KEY,
     name TEXT,
     incredient_id REFERENCES Incredients,
-    class_id REFERENCES Classes
-)
-
-CREATE TABLE Classes (
-    id INTEGER PRIMARY KEY,
-    name TEXT
-)
+    class TEXT CHECK(class IN ('Breakfast/Supper', 'Lunch/Dinner', 'Snack'))
+);
 
 CREATE TABLE Eaten (
     id INTEGER PRIMARY KEY,
     user_id REFERENCES Users,
     food_id REFERENCES Foods,
     time TEXT
-)
+);
