@@ -32,7 +32,11 @@ def all_foods():
             food_id = db.last_insert_id()
 
             for ing in ingredients:
-                qty = float(request.form.get(f"ingredient_{ing["id"]}", 0))
+                raw_qty = request.form.get(f"ingredient_{ing['id']}", "")
+                try:
+                    qty = float(raw_qty) if raw_qty.strip() != "" else 0.0
+                except ValueError:
+                    qty = 0.0
                 if qty > 0:
                     db.execute(
                         "INSERT INTO FoodIngredients (food_id, ingredient_id, quantity) VALUES (?, ?, ?)",
@@ -123,7 +127,6 @@ def edit_food(food_id):
             [food_name, food_class, food_id]
         )
 
-
         # Update the FoodIngredients
         # First, delete existing entries
         db.execute("DELETE FROM FoodIngredients WHERE food_id = ?", [food_id])
@@ -132,7 +135,6 @@ def edit_food(food_id):
         ingredients = db.query("SELECT * FROM Ingredients")
         for ing in ingredients:
             qty = float(request.form.get(f"ingredient_{ing['id']}", 0))
-            print(f"Ingredient ID: {ing['id']}, Quantity: {qty}")
             if qty > 0:
                 db.execute(
                     "INSERT INTO FoodIngredients (food_id, ingredient_id, quantity) VALUES (?, ?, ?)",

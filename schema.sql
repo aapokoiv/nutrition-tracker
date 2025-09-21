@@ -16,7 +16,7 @@ CREATE TABLE Ingredients (
 CREATE TABLE Foods (
     id INTEGER PRIMARY KEY,
     name TEXT,
-    class TEXT CHECK(class IN ('Breakfast/Supper', 'Lunch/Dinner', 'Snack'))
+    class TEXT CHECK(class IN ('Breakfast/Supper', 'Lunch/Dinner', 'Snack', 'Drink'))
 );
 
 CREATE TABLE FoodIngredients (
