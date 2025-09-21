@@ -6,7 +6,7 @@
 * Adding ingredients
 * Making meals from ingredients and giving them a class
 * Modifying and deleting foods and ingredients you have added
-* Searching foods and ingredients based on classes or keywords
+* Searching foods and ingredients based on classes or properities
 * Searching what others have added and being able to like them (not yet implemented)
 * Tracking your nutrition intake daily (not yet implemented)
 * Profile with statistics and history (not yet implemented)
