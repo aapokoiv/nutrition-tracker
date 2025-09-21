@@ -43,10 +43,11 @@ def all_foods():
 
     rows = db.query("""
         SELECT f.id AS food_id, f.name AS food_name, f.class AS food_class,
-               i.name AS ingredient_name, i.protein, i.calories, fi.quantity
+        COALESCE(i.name, '') AS ingredient_name, COALESCE(i.protein, 0) AS protein, 
+        COALESCE(i.calories, 0) AS calories, COALESCE(fi.quantity, 0) AS quantity
         FROM Foods f
-        JOIN FoodIngredients fi ON f.id = fi.food_id
-        JOIN Ingredients i ON fi.ingredient_id = i.id
+        LEFT JOIN FoodIngredients fi ON f.id = fi.food_id
+        LEFT JOIN Ingredients i ON fi.ingredient_id = i.id
         ORDER BY f.id
     """)
 
@@ -60,12 +61,13 @@ def all_foods():
                 "class": row["food_class"],
                 "ingredients": []
             }
-        foods[fid]["ingredients"].append({
-            "name": row["ingredient_name"],
-            "protein": row["protein"],
-            "calories": row["calories"],
-            "quantity": row["quantity"]
-        })
+        if row["ingredient_name"]:
+            foods[fid]["ingredients"].append({
+                "name": row["ingredient_name"],
+                "protein": row["protein"],
+                "calories": row["calories"],
+                "quantity": row["quantity"]
+            })
 
     return render_template(
         "foods.html",
@@ -109,3 +111,44 @@ def edit_ingredient(ingredient_id):
     ingredient = db.query("SELECT * FROM Ingredients WHERE id = ?", [ingredient_id])[0]
     return render_template("edit_ingredient.html", ingredient=ingredient)
 
+@foods_bp.route("/foods/<int:food_id>/edit", methods=["GET", "POST"])
+@login_required
+def edit_food(food_id):
+    if request.method == "POST":
+        food_name = request.form.get("food_name")
+        food_class = request.form.get("food_class")
+
+        db.execute(
+            "UPDATE Foods SET name = ?, class = ? WHERE id = ?",
+            [food_name, food_class, food_id]
+        )
+
+
+        # Update the FoodIngredients
+        # First, delete existing entries
+        db.execute("DELETE FROM FoodIngredients WHERE food_id = ?", [food_id])
+
+        # Then, insert new entries
+        ingredients = db.query("SELECT * FROM Ingredients")
+        for ing in ingredients:
+            qty = float(request.form.get(f"ingredient_{ing['id']}", 0))
+            print(f"Ingredient ID: {ing['id']}, Quantity: {qty}")
+            if qty > 0:
+                db.execute(
+                    "INSERT INTO FoodIngredients (food_id, ingredient_id, quantity) VALUES (?, ?, ?)",
+                    [food_id, ing["id"], qty]
+                )
+
+        flash(f"Food '{food_name}' updated.")
+        return redirect(url_for("foods.all_foods"))
+
+    # GET: fetch current values
+    food = db.query("SELECT * FROM Foods WHERE id = ?", [food_id])[0]
+    food_ingredients = db.query("""
+        SELECT fi.quantity, i.id, i.name, i.protein, i.calories
+        FROM FoodIngredients fi
+        JOIN Ingredients i ON fi.ingredient_id = i.id
+        WHERE fi.food_id = ?
+    """, [food_id])
+
+    return render_template("edit_food.html", food=food, food_ingredients=food_ingredients)

@@ -63,6 +63,9 @@
         <button type="submit">Delete Food</button>
       </form>
     </td>
+    <td>
+      <a href="{{ url_for('foods.edit_food', food_id=food.id) }}">Edit</a>
+    </td>
   </tr>
   {% endfor %}
 </table>
