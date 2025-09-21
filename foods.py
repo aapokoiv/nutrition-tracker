@@ -89,3 +89,23 @@ def delete_ingredient(ingredient_id):
     db.execute("DELETE FROM Ingredients WHERE id = ?", [ingredient_id])
     flash("Ingredient deleted.")
     return redirect(url_for("foods.all_foods"))
+
+
+@foods_bp.route("/ingredients/<int:ingredient_id>/edit", methods=["GET", "POST"])
+@login_required
+def edit_ingredient(ingredient_id):
+    if request.method == "POST":
+        name = request.form.get("name")
+        protein = float(request.form.get("protein", 0))
+        calories = float(request.form.get("calories", 0))
+        db.execute(
+            "UPDATE Ingredients SET name = ?, protein = ?, calories = ? WHERE id = ?",
+            [name, protein, calories, ingredient_id]
+        )
+        flash("Ingredient updated.")
+        return redirect(url_for("foods.all_foods"))
+
+    # GET: fetch current values
+    ingredient = db.query("SELECT * FROM Ingredients WHERE id = ?", [ingredient_id])[0]
+    return render_template("edit_ingredient.html", ingredient=ingredient)
+

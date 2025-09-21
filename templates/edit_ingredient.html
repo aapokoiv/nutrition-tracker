@@ -1,0 +1,10 @@
+<h3>Edit Ingredient</h3>
+<form method="post">
+  <input type="text" name="name" value="{{ ingredient.name }}" required>
+  <input type="number" step="0.01" name="protein" value="{{ ingredient.protein }}" required>
+  <input type="number" step="0.01" name="calories" value="{{ ingredient.calories }}" required>
+  <button type="submit">Save Changes</button>
+</form>
+<form action="{{ url_for('foods.all_foods') }}" method="get">
+  <button type="submit">Cancel</button>
+</form>
