@@ -1,19 +1,12 @@
 from flask import Flask, render_template, session, request, redirect, flash, get_flashed_messages, url_for, g
 from werkzeug.security import generate_password_hash, check_password_hash
-from functools import wraps
 import db, config, sqlite3
-
+from foods import foods_bp
+from auth import login_required
 
 app = Flask(__name__)
 app.secret_key = config.secret_key
-
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if "username" not in session:
-            return redirect(url_for("login"))
-        return f(*args, **kwargs)
-    return decorated_function
+app.register_blueprint(foods_bp)
 
 
 @app.route("/")
@@ -24,10 +17,19 @@ def index():
 
     sql = "SELECT protein_target, calorie_target FROM users WHERE username = ?"
     result = db.query(sql, [user])
+    if not result:
+        session.pop("username", None)
+        return redirect(url_for("login"))
     pt = result[0]["protein_target"]
     ct = result[0]["calorie_target"]
+    return render_template("index.html", messages=messages, pt=pt, ct=ct, user=user)
 
-    return render_template("index.html", messages=messages, pt=pt, ct=ct)
+@app.template_filter("sum")
+def sum_ingredient_values(items, attribute, quantity_attribute="quantity"):
+    total = 0.0
+    for i in items:
+        total += i[attribute] * i.get(quantity_attribute, 1.0)
+    return round(total, 2)
 
 
 @app.route("/update-protein", methods=["POST"])

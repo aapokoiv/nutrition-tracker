@@ -6,18 +6,24 @@ CREATE TABLE Users (
     calorie_target INTEGER
 );
 
-CREATE TABLE Incredients (
+CREATE TABLE Ingredients (
     id INTEGER PRIMARY KEY,
     name TEXT,
-    protein INTEGER,
+    protein REAL,
     calories INTEGER
 );
 
 CREATE TABLE Foods (
     id INTEGER PRIMARY KEY,
     name TEXT,
-    incredient_id REFERENCES Incredients,
     class TEXT CHECK(class IN ('Breakfast/Supper', 'Lunch/Dinner', 'Snack'))
+);
+
+CREATE TABLE FoodIngredients (
+    id INTEGER PRIMARY KEY,
+    food_id INTEGER REFERENCES Foods(id) ON DELETE CASCADE,
+    ingredient_id INTEGER REFERENCES Ingredients(id),
+    quantity REAL DEFAULT 1.0
 );
 
 CREATE TABLE Eaten (
