@@ -45,16 +45,26 @@ def all_foods():
             flash(f"Food '{food_name}' added.")
             return redirect(url_for("foods.all_foods"))
 
+    ing_sort_by = request.args.get("ing_sort_by", "name")
+    ing_sort_dir = request.args.get("ing_sort_dir", "asc")
+    food_sort_by = request.args.get("food_sort_by", "name")
+    food_sort_dir = request.args.get("food_sort_dir", "asc")
+
+    allowed_ing_sorts = {"name", "protein", "calories"}
+    allowed_food_sorts = {"name", "class", "total_protein", "total_calories"}
+
+    # Fetch flattened foods+ingredients for total calculations
     rows = db.query("""
         SELECT f.id AS food_id, f.name AS food_name, f.class AS food_class,
-        COALESCE(i.name, '') AS ingredient_name, COALESCE(i.protein, 0) AS protein, 
-        COALESCE(i.calories, 0) AS calories, COALESCE(fi.quantity, 0) AS quantity
+               COALESCE(i.name, '') AS ingredient_name, COALESCE(i.protein, 0) AS protein,
+               COALESCE(i.calories, 0) AS calories, COALESCE(fi.quantity, 0) AS quantity
         FROM Foods f
         LEFT JOIN FoodIngredients fi ON f.id = fi.food_id
         LEFT JOIN Ingredients i ON fi.ingredient_id = i.id
         ORDER BY f.id
     """)
 
+    # Reconstruct foods dict and calculate totals
     foods = {}
     for row in rows:
         fid = row["food_id"]
@@ -73,11 +83,44 @@ def all_foods():
                 "quantity": row["quantity"]
             })
 
+    # Convert to list with totals
+    foods_list = []
+    for f in foods.values():
+        total_prot = sum(ing["protein"] * ing.get("quantity", 0) for ing in f["ingredients"])
+        total_cal = sum(ing["calories"] * ing.get("quantity", 0) for ing in f["ingredients"])
+        f["total_protein"] = round(total_prot, 2)
+        f["total_calories"] = round(total_cal, 2)
+        foods_list.append(f)
+
+    # ---------- Sorting ----------
+    # Ingredients
+    if ing_sort_by not in allowed_ing_sorts:
+        ing_sort_by = "name"
+    ing_reverse = (ing_sort_dir == "desc")
+    if ing_sort_by == "name":
+        ingredients = sorted(ingredients, key=lambda x: x["name"].lower(), reverse=ing_reverse)
+    else:
+        ingredients = sorted(ingredients, key=lambda x: float(x[ing_sort_by]), reverse=ing_reverse)
+
+    # Foods
+    if food_sort_by not in allowed_food_sorts:
+        food_sort_by = "name"
+    food_reverse = (food_sort_dir == "desc")
+    if food_sort_by in ("name", "class"):
+        foods_list = sorted(foods_list, key=lambda x: x[food_sort_by].lower(), reverse=food_reverse)
+    else:
+        foods_list = sorted(foods_list, key=lambda x: float(x[food_sort_by]), reverse=food_reverse)
+
     return render_template(
         "foods.html",
-        foods=foods,
         ingredients=ingredients,
-        messages=messages
+        foods_list=foods_list,
+        foods=foods,
+        messages=messages,
+        ing_sort_by=ing_sort_by,
+        ing_sort_dir=ing_sort_dir,
+        food_sort_by=food_sort_by,
+        food_sort_dir=food_sort_dir
     )
 
 @foods_bp.route("/foods/<int:food_id>/delete", methods=["POST"])

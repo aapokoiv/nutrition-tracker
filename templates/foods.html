@@ -6,6 +6,35 @@
 
 <hr>
 
+<form method="get" style="margin-bottom:1em;">
+  <label>Ingredient sort:</label>
+  <select name="ing_sort_by">
+    <option value="name" {% if ing_sort_by=='name' %}selected{% endif %}>Name</option>
+    <option value="protein" {% if ing_sort_by=='protein' %}selected{% endif %}>Protein</option>
+    <option value="calories" {% if ing_sort_by=='calories' %}selected{% endif %}>Calories</option>
+  </select>
+  <select name="ing_sort_dir">
+    <option value="asc" {% if ing_sort_dir=='asc' %}selected{% endif %}>↑</option>
+    <option value="desc" {% if ing_sort_dir=='desc' %}selected{% endif %}>↓</option>
+  </select>
+
+  &nbsp; &nbsp;
+
+  <label>Food sort:</label>
+  <select name="food_sort_by">
+    <option value="name" {% if food_sort_by=='name' %}selected{% endif %}>Name</option>
+    <option value="class" {% if food_sort_by=='class' %}selected{% endif %}>Class</option>
+    <option value="total_protein" {% if food_sort_by=='total_protein' %}selected{% endif %}>Total Protein</option>
+    <option value="total_calories" {% if food_sort_by=='total_calories' %}selected{% endif %}>Total Calories</option>
+  </select>
+  <select name="food_sort_dir">
+    <option value="asc" {% if food_sort_dir=='asc' %}selected{% endif %}>↑</option>
+    <option value="desc" {% if food_sort_dir=='desc' %}selected{% endif %}>↓</option>
+  </select>
+
+  <button type="submit">Apply</button>
+</form>
+
 <h3>Existing Ingredients</h3>
 <table border="1" cellpadding="5">
   <tr><th>Name</th><th>Protein</th><th>Calories</th></tr>
@@ -43,7 +72,7 @@
   <tr>
     <th>Food Name</th><th>Meal Class</th><th>Ingredients</th><th>Total Protein</th><th>Total Calories</th>
   </tr>
-  {% for food in foods.values() %}
+  {% for food in foods_list %}
   <tr>
     <td>{{ food.name }}</td>
     <td>{{ food.class }}</td>
