@@ -55,6 +55,7 @@ def all_foods():
         fid = row["food_id"]
         if fid not in foods:
             foods[fid] = {
+                "id": fid,
                 "name": row["food_name"],
                 "class": row["food_class"],
                 "ingredients": []
@@ -73,3 +74,18 @@ def all_foods():
         messages=messages
     )
 
+@foods_bp.route("/foods/<int:food_id>/delete", methods=["POST"])
+@login_required
+def delete_food(food_id):
+    db.execute("DELETE FROM FoodIngredients WHERE food_id = ?", [food_id])
+    db.execute("DELETE FROM Foods WHERE id = ?", [food_id])
+    flash("Food deleted.")
+    return redirect(url_for("foods.all_foods"))
+
+@foods_bp.route("/ingredients/<int:ingredient_id>/delete", methods=["POST"])
+@login_required
+def delete_ingredient(ingredient_id):
+    db.execute("DELETE FROM FoodIngredients WHERE ingredient_id = ?", [ingredient_id])
+    db.execute("DELETE FROM Ingredients WHERE id = ?", [ingredient_id])
+    flash("Ingredient deleted.")
+    return redirect(url_for("foods.all_foods"))

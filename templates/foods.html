@@ -14,6 +14,13 @@
     <td>{{ ing.name }}</td>
     <td>{{ ing.protein }}</td>
     <td>{{ ing.calories }}</td>
+    <td>
+      <form action="{{ url_for('foods.delete_ingredient', ingredient_id=ing.id) }}"
+            method="post" style="display:inline;">
+        <button type="submit">Delete</button>
+      </form>
+    </td>
+    <p>deleting a ingredient removes it from all foods, if it is the last ingredient in a food; the food is deleted</p>
   </tr>
   {% endfor %}
 </table>
@@ -47,6 +54,11 @@
     </td>
     <td>
       {{ food.ingredients | sum(attribute='calories', quantity_attribute='quantity') }}
+    </td>
+    <td>
+      <form action="{{ url_for('foods.delete_food', food_id=food.id) }}" method="post" style="display:inline;">
+        <button type="submit">Delete Food</button>
+      </form>
     </td>
   </tr>
   {% endfor %}
