@@ -1,6 +1,6 @@
 from flask import Flask, render_template, session, request, redirect, flash, get_flashed_messages, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
-import db, config, users
+import config, users
 from foods import foods_bp
 from auth import login_required
 
@@ -93,7 +93,7 @@ def create():
     password_hash = generate_password_hash(password1)
 
     try:
-        users.create_user([username, password_hash])
+        users.create_user(username, password_hash)
     except:
         flash("Username already taken")
         return redirect(url_for("register"))
