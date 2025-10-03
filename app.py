@@ -1,6 +1,6 @@
 from flask import Flask, render_template, session, request, redirect, flash, get_flashed_messages, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
-import db, config, sqlite3, users
+import db, config, users
 from foods import foods_bp
 from auth import login_required
 
@@ -12,17 +12,19 @@ app.register_blueprint(foods_bp)
 @app.route("/")
 @login_required
 def index():
-    messages=get_flashed_messages()
-    user = session.get("username")
+    messages = get_flashed_messages()
+    user_id = session.get("user_id")
 
-    sql = "SELECT protein_target, calorie_target FROM users WHERE username = ?"
-    result = db.query(sql, [user])
-    if not result:
-        session.pop("username", None)
+    user = users.get_user_by_id(user_id)
+    if not user:
+        session.pop("user_id", None)
         return redirect(url_for("login"))
-    pt = result[0]["protein_target"]
-    ct = result[0]["calorie_target"]
-    return render_template("index.html", messages=messages, pt=pt, ct=ct, user=user)
+
+    return render_template("index.html", 
+                           messages=messages, 
+                           pt=user["protein_target"], 
+                           ct=user["calorie_target"], 
+                           user=user["username"])
 
 @app.template_filter("sum")
 def sum_ingredient_values(items, attribute, quantity_attribute="quantity"):
@@ -36,15 +38,26 @@ def sum_ingredient_values(items, attribute, quantity_attribute="quantity"):
 @login_required
 def update_protein():
     protein_target = request.form.get("protein_target", type=int)
-    users.update_protein_target(session["username"], protein_target)
+
+    if protein_target is None or protein_target < 0:
+        flash("Invalid protein target. Please enter a positive number.")
+        return redirect(url_for("index"))
+
+    users.update_protein_target(session["user_id"], protein_target)
     flash("Protein target updated.")
     return redirect(url_for("index"))
+
 
 @app.route("/update-calories", methods=["POST"])
 @login_required
 def update_calories():
     calorie_target = request.form.get("calorie_target", type=int)
-    users.update_calorie_target(session["username"], calorie_target)
+
+    if calorie_target is None or calorie_target < 0:
+        flash("Invalid calorie target. Please enter a positive number.")
+        return redirect(url_for("index"))
+
+    users.update_calorie_target(session["user_id"], calorie_target)
     flash("Calorie target updated.")
     return redirect(url_for("index"))
 
@@ -60,9 +73,23 @@ def create():
     username = request.form["username"]
     password1 = request.form["password1"]
     password2 = request.form["password2"]
+
+    if not username or not password1:
+        flash("Username and password are required")
+        return redirect(url_for("register"))
+
+    if len(username) > 30:
+        flash("Username too long (max 30 characters)")
+        return redirect(url_for("register"))
+
     if password1 != password2:
         flash("Passwords don't match")
         return redirect(url_for("register"))
+    
+    if len(password1) < 1:
+        flash("Password must be at least 1 characters long")
+        return redirect(url_for("register"))
+
     password_hash = generate_password_hash(password1)
 
     try:
@@ -79,30 +106,24 @@ def create():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
-        
-        sql = "SELECT password_hash FROM users WHERE username = ?"
-        user = db.query(sql, [username])
-        if not user:
-            flash("Wrong username or password")
-            return redirect("/login")
-        password_hash = user[0]["password_hash"]
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
 
-        if check_password_hash(password_hash, password):
-            session["username"] = username
-            flash("Logged in successfully")
-            return redirect("/")
-        
-        flash("Wrong username or password")
-        return redirect(url_for("login"))
-        
+        user = users.get_user_by_username(username)
+        if not user or not check_password_hash(user["password_hash"], password):
+            flash("Wrong username or password")
+            return redirect(url_for("login"))
+
+        session["user_id"] = user["id"]
+        flash("Logged in successfully")
+        return redirect(url_for("index"))
+
     messages = get_flashed_messages()
     return render_template("login.html", messages=messages)
 
 @app.route("/logout")
 @login_required
 def logout():
-    session.pop("username", None)
+    session.pop("user_id", None)
     flash("Logged out")
     return redirect(url_for("index"))
