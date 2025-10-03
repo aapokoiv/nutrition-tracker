@@ -37,36 +37,6 @@
 
 <a href="{{ url_for('index') }}">Back</a>
 
-<h3>Existing Ingredients</h3>
-<table border="1" cellpadding="5">
-  <tr><th>Name</th><th>Protein</th><th>Calories</th></tr>
-  {% for ing in ingredients %}
-  <tr>
-    <td>{{ ing.name }}</td>
-    <td>{{ ing.protein }}</td>
-    <td>{{ ing.calories }}</td>
-    <td>
-      <form action="{{ url_for('foods.delete_ingredient', ingredient_id=ing.id) }}"
-            method="post" style="display:inline;">
-        <button type="submit">Delete</button>
-      </form>
-    </td>
-    <td>
-      <a href="{{ url_for('foods.edit_ingredient', ingredient_id=ing.id) }}">Edit</a>
-    </td>
-  </tr>
-  {% endfor %}
-</table>
-<p>deleting a ingredient removes it from all foods, if it is the last ingredient in a food; the food is deleted</p>
-
-<h3>Add Ingredient</h3>
-<form method="post">
-  <input type="text" name="ingredient_name" placeholder="Ingredient Name" required>
-  <input type="number" step="0.01" name="ingredient_protein" placeholder="Protein (g)" required>
-  <input type="number" step="0.01" name="ingredient_calories" placeholder="Calories" required>
-  <button type="submit" name="ingredient_submit">Add Ingredient</button>
-</form>
-
 <hr>
 
 <h3>Existing Foods</h3>
@@ -118,4 +88,36 @@
   {% endfor %}
 
   <button type="submit" name="food_submit">Add Food</button>
+</form>
+
+<hr>
+
+<h3>Existing Ingredients</h3>
+<table border="1" cellpadding="5">
+  <tr><th>Name</th><th>Protein</th><th>Calories</th></tr>
+  {% for ing in ingredients %}
+  <tr>
+    <td>{{ ing.name }}</td>
+    <td>{{ ing.protein }}</td>
+    <td>{{ ing.calories }}</td>
+    <td>
+      <form action="{{ url_for('foods.delete_ingredient', ingredient_id=ing.id) }}"
+            method="post" style="display:inline;">
+        <button type="submit">Delete</button>
+      </form>
+    </td>
+    <td>
+      <a href="{{ url_for('foods.edit_ingredient', ingredient_id=ing.id) }}">Edit</a>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+<p>deleting a ingredient removes it from all foods, if it is the last ingredient in a food; the food is deleted</p>
+
+<h3>Add Ingredient</h3>
+<form method="post">
+  <input type="text" name="ingredient_name" placeholder="Ingredient Name" required>
+  <input type="number" step="0.01" name="ingredient_protein" placeholder="Protein (g)" min="0" required>
+  <input type="number" step="0.01" name="ingredient_calories" placeholder="Calories" min="0" required>
+  <button type="submit" name="ingredient_submit">Add Ingredient</button>
 </form>

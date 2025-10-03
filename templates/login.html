@@ -11,8 +11,8 @@
     <p>Please log in</p>
 
     <form action="{{ url_for('login') }}" method="post">
-        <p>Username: <input type="text" name="username"></p>
-        <p>Password: <input type="password" name="password"></p>
+        <p>Username: <input type="text" name="username" maxlength="30" required></p>
+        <p>Password: <input type="password" name="password" minlength="1" required></p>
         <input type="submit" value="Login">
     </form>
 

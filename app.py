@@ -1,6 +1,6 @@
-from flask import Flask, render_template, session, request, redirect, flash, get_flashed_messages, url_for, g
+from flask import Flask, render_template, session, request, redirect, flash, get_flashed_messages, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
-import db, config, sqlite3
+import db, config, sqlite3, users
 from foods import foods_bp
 from auth import login_required
 
@@ -36,10 +36,7 @@ def sum_ingredient_values(items, attribute, quantity_attribute="quantity"):
 @login_required
 def update_protein():
     protein_target = request.form.get("protein_target", type=int)
-
-    sql = "UPDATE users SET protein_target = ? WHERE username = ?"
-    db.execute(sql, [protein_target, session["username"]])
-
+    users.update_protein_target(session["username"], protein_target)
     flash("Protein target updated.")
     return redirect(url_for("index"))
 
@@ -47,10 +44,7 @@ def update_protein():
 @login_required
 def update_calories():
     calorie_target = request.form.get("calorie_target", type=int)
-
-    sql = "UPDATE users SET calorie_target = ? WHERE username = ?"
-    db.execute(sql, [calorie_target, session["username"]])
-
+    users.update_calorie_target(session["username"], calorie_target)
     flash("Calorie target updated.")
     return redirect(url_for("index"))
 
@@ -68,18 +62,18 @@ def create():
     password2 = request.form["password2"]
     if password1 != password2:
         flash("Passwords don't match")
-        return redirect("/register")
+        return redirect(url_for("register"))
     password_hash = generate_password_hash(password1)
 
     try:
         sql = "INSERT INTO users (username, password_hash) VALUES (?, ?)"
         db.execute(sql, [username, password_hash])
-    except sqlite3.IntegrityError:
+    except:
         flash("Username already taken")
-        return redirect("/register")
+        return redirect(url_for("register"))
     
     flash("Account created successfully")
-    return redirect("/")
+    return redirect(url_for("index"))
 
 # Log in
 @app.route("/login", methods=["GET", "POST"])
@@ -99,15 +93,16 @@ def login():
             session["username"] = username
             flash("Logged in successfully")
             return redirect("/")
-        else:
-            flash("Wrong username or password")
-            return redirect("/login")
+        
+        flash("Wrong username or password")
+        return redirect(url_for("login"))
         
     messages = get_flashed_messages()
     return render_template("login.html", messages=messages)
 
 @app.route("/logout")
+@login_required
 def logout():
     session.pop("username", None)
     flash("Logged out")
-    return redirect("/")
+    return redirect(url_for("index"))
