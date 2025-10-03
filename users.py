@@ -12,7 +12,7 @@ def get_user_by_username(username):
 
 def create_user(username, password_hash):
     sql = "INSERT INTO users (username, password_hash) VALUES (?, ?)"
-    db.execute(sql, [username, password_hash])
+    return db.execute(sql, [username, password_hash])   # returns new id
 
 def update_protein_target(user_id, protein_target):
     sql = "UPDATE users SET protein_target = ? WHERE id = ?"

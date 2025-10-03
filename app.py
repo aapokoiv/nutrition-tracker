@@ -26,7 +26,7 @@ def index():
                            ct=user["calorie_target"], 
                            user=user["username"])
 
-@app.template_filter("sum")
+@app.template_filter("sum_values")
 def sum_ingredient_values(items, attribute, quantity_attribute="quantity"):
     total = 0.0
     for i in items:
@@ -93,14 +93,13 @@ def create():
     password_hash = generate_password_hash(password1)
 
     try:
-        sql = "INSERT INTO users (username, password_hash) VALUES (?, ?)"
-        db.execute(sql, [username, password_hash])
+        users.create_user([username, password_hash])
     except:
         flash("Username already taken")
         return redirect(url_for("register"))
     
     flash("Account created successfully")
-    return redirect(url_for("index"))
+    return redirect(url_for("login"))
 
 # Log in
 @app.route("/login", methods=["GET", "POST"])

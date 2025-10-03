@@ -18,7 +18,10 @@ CREATE TABLE Foods (
     id INTEGER PRIMARY KEY,
     name TEXT,
     user_id REFERENCES Users,
-    class TEXT CHECK(class IN ('Breakfast/Supper', 'Lunch/Dinner', 'Snack', 'Drink'))
+    class TEXT CHECK(class IN ('Breakfast/Supper', 'Lunch/Dinner', 'Snack', 'Drink')),
+    is_public INTEGER DEFAULT 1,
+    total_protein REAL DEFAULT 0.0,
+    total_calories REAL DEFAULT 0.0
 );
 
 CREATE TABLE FoodIngredients (
@@ -32,5 +35,21 @@ CREATE TABLE Eaten (
     id INTEGER PRIMARY KEY,
     user_id REFERENCES Users,
     food_id REFERENCES Foods,
-    time TEXT
+    time TEXT DEFAULT (datetime('now')),
+    quantity REAL DEFAULT 1.0,
+    eaten_protein REAL DEFAULT 0.0,
+    eaten_calories REAL DEFAULT 0.0
 );
+
+CREATE TABLE Likes (
+    user_id INTEGER REFERENCES Users(id) ON DELETE CASCADE,
+    food_id INTEGER REFERENCES Foods(id) ON DELETE CASCADE,
+    created_at TEXT DEFAULT (datetime('now')),
+    PRIMARY KEY (user_id, food_id)
+);
+
+CREATE INDEX idx_ingredients_user ON Ingredients(user_id);
+CREATE INDEX idx_foods_user ON Foods(user_id);
+CREATE INDEX idx_foodingredients_food ON FoodIngredients(food_id);
+CREATE INDEX idx_likes_user ON Likes(user_id);
+CREATE INDEX idx_eaten_user_time ON Eaten(user_id, time);

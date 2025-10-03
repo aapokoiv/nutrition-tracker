@@ -9,7 +9,7 @@ foods_bp = Blueprint("foods", __name__, template_folder="templates")
 def all_foods():
     user_id = session["user_id"]
     messages = get_flashed_messages()
-    ingredients = db.query("SELECT * FROM Ingredients")
+    ingredients = db.query("SELECT * FROM Ingredients WHERE user_id = ?", [user_id])
 
     if request.method == "POST":
         if "ingredient_submit" in request.form:
@@ -18,7 +18,7 @@ def all_foods():
             calories = float(request.form.get("ingredient_calories", 0))
             db.execute(
                 "INSERT INTO Ingredients (name, protein, calories, user_id) VALUES (?, ?, ?, ?)",
-                [name, protein, calories, session["user_id"]]
+                [name, protein, calories, user_id]
             )
             flash(f"Ingredient '{name}' added.")
             return redirect(url_for("foods.all_foods"))
@@ -26,11 +26,11 @@ def all_foods():
         if "food_submit" in request.form:
             food_name = request.form.get("food_name")
             food_class = request.form.get("food_class")
-            db.execute(
-                "INSERT INTO Foods (name, class, user_id) VALUES (?, ?, ?)",
-                [food_name, food_class, session["user_id"]]
+            is_public = 1 if request.form.get("is_public") == "on" else 0
+            food_id = db.execute(
+                "INSERT INTO Foods (name, class, user_id, is_public) VALUES (?, ?, ?, ?)",
+                [food_name, food_class, user_id, is_public]
             )
-            food_id = db.last_insert_id()
 
             for ing in ingredients:
                 raw_qty = request.form.get(f"ingredient_{ing['id']}", "")
@@ -43,6 +43,9 @@ def all_foods():
                         "INSERT INTO FoodIngredients (food_id, ingredient_id, quantity) VALUES (?, ?, ?)",
                         [food_id, ing["id"], qty]
                     )
+                
+            update_food_totals(food_id)
+
             flash(f"Food '{food_name}' added.")
             return redirect(url_for("foods.all_foods"))
 
@@ -55,8 +58,6 @@ def all_foods():
     allowed_food_sorts = {"name", "class", "total_protein", "total_calories"}
 
     # Fetch flattened foods+ingredients for total calculations
-
-    ingredients = db.query("SELECT * FROM Ingredients WHERE user_id = ?", [user_id])
 
     rows = db.query("""
         SELECT f.id AS food_id, f.name AS food_name, f.class AS food_class,
@@ -206,5 +207,63 @@ def edit_food(food_id):
         flash("Food not found.")
         return redirect(url_for("foods.all_foods"))
 
-    food_ingredients = db.query(""" ... """, [food_id])
+    food_ingredients = db.query("""
+        SELECT fi.quantity, i.id AS ingredient_id, i.name, i.protein, i.calories
+        FROM FoodIngredients fi
+        JOIN Ingredients i ON fi.ingredient_id = i.id
+        WHERE fi.food_id = ?
+        """, [food_id])
     return render_template("edit_food.html", food=food[0], food_ingredients=food_ingredients)
+
+@foods_bp.route("/foods/<int:food_id>/eat", methods=["POST"])
+@login_required
+def eat_food(food_id):
+    user_id = session["user_id"]
+    qty = float(request.form.get("quantity", 1.0))
+    # Fetch food totals
+    food = db.query("SELECT id, total_protein, total_calories FROM Foods WHERE id = ?", [food_id])
+    if not food:
+        flash("Food not found.")
+        return redirect(url_for("foods.all_foods"))
+    f = food[0]
+    eaten_protein = (f["total_protein"] or 0.0) * qty
+    eaten_calories = (f["total_calories"] or 0.0) * qty
+    db.execute(
+        "INSERT INTO Eaten (user_id, food_id, time, quantity, eaten_protein, eaten_calories) VALUES (?, ?, datetime('now'), ?, ?, ?)",
+        [user_id, food_id, qty, eaten_protein, eaten_calories]
+    )
+    flash("Recorded as eaten.")
+    return redirect(request.referrer or url_for("foods.all_foods"))
+
+@foods_bp.route("/foods/<int:food_id>/like", methods=["POST"])
+@login_required
+def like_food(food_id):
+    user_id = session["user_id"]
+    # insert ignore style: try/except on unique constraint
+    try:
+        db.execute("INSERT INTO Likes (user_id, food_id) VALUES (?, ?)", [user_id, food_id])
+        flash("Liked.")
+    except Exception:
+        # already liked or other error
+        pass
+    return redirect(request.referrer or url_for("foods.all_foods"))
+
+@foods_bp.route("/foods/<int:food_id>/unlike", methods=["POST"])
+@login_required
+def unlike_food(food_id):
+    user_id = session["user_id"]
+    db.execute("DELETE FROM Likes WHERE user_id = ? AND food_id = ?", [user_id, food_id])
+    flash("Removed from liked foods.")
+    return redirect(request.referrer or url_for("foods.all_foods"))
+
+def update_food_totals(food_id):
+    rows = db.query("""
+        SELECT COALESCE(i.protein,0) AS protein, COALESCE(i.calories,0) AS calories, COALESCE(fi.quantity,1) AS qty
+        FROM FoodIngredients fi
+        JOIN Ingredients i ON fi.ingredient_id = i.id
+        WHERE fi.food_id = ?
+    """, [food_id])
+    total_prot = sum(r["protein"] * r["qty"] for r in rows)
+    total_cal = sum(r["calories"] * r["qty"] for r in rows)
+    db.execute("UPDATE Foods SET total_protein = ?, total_calories = ? WHERE id = ?", [round(total_prot,2), round(total_cal,2), food_id])
+
