@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, get_flashed_messages
+from flask import Blueprint, render_template, request, redirect, url_for, flash, get_flashed_messages, session
 import db
 from auth import login_required
 
@@ -7,6 +7,7 @@ foods_bp = Blueprint("foods", __name__, template_folder="templates")
 @foods_bp.route("/foods", methods=["GET", "POST"])
 @login_required
 def all_foods():
+    user_id = session["user_id"]
     messages = get_flashed_messages()
     ingredients = db.query("SELECT * FROM Ingredients")
 
@@ -16,8 +17,8 @@ def all_foods():
             protein = float(request.form.get("ingredient_protein", 0))
             calories = float(request.form.get("ingredient_calories", 0))
             db.execute(
-                "INSERT INTO Ingredients (name, protein, calories) VALUES (?, ?, ?)",
-                [name, protein, calories]
+                "INSERT INTO Ingredients (name, protein, calories, user_id) VALUES (?, ?, ?, ?)",
+                [name, protein, calories, session["user_id"]]
             )
             flash(f"Ingredient '{name}' added.")
             return redirect(url_for("foods.all_foods"))
@@ -26,8 +27,8 @@ def all_foods():
             food_name = request.form.get("food_name")
             food_class = request.form.get("food_class")
             db.execute(
-                "INSERT INTO Foods (name, class) VALUES (?, ?)",
-                [food_name, food_class]
+                "INSERT INTO Foods (name, class, user_id) VALUES (?, ?, ?)",
+                [food_name, food_class, session["user_id"]]
             )
             food_id = db.last_insert_id()
 
@@ -54,15 +55,19 @@ def all_foods():
     allowed_food_sorts = {"name", "class", "total_protein", "total_calories"}
 
     # Fetch flattened foods+ingredients for total calculations
+
+    ingredients = db.query("SELECT * FROM Ingredients WHERE user_id = ?", [user_id])
+
     rows = db.query("""
         SELECT f.id AS food_id, f.name AS food_name, f.class AS food_class,
-               COALESCE(i.name, '') AS ingredient_name, COALESCE(i.protein, 0) AS protein,
-               COALESCE(i.calories, 0) AS calories, COALESCE(fi.quantity, 0) AS quantity
+            COALESCE(i.name, '') AS ingredient_name, COALESCE(i.protein, 0) AS protein,
+            COALESCE(i.calories, 0) AS calories, COALESCE(fi.quantity, 0) AS quantity
         FROM Foods f
         LEFT JOIN FoodIngredients fi ON f.id = fi.food_id
         LEFT JOIN Ingredients i ON fi.ingredient_id = i.id
+        WHERE f.user_id = ?
         ORDER BY f.id
-    """)
+    """, [user_id])
 
     # Reconstruct foods dict and calculate totals
     foods = {}
@@ -126,16 +131,18 @@ def all_foods():
 @foods_bp.route("/foods/<int:food_id>/delete", methods=["POST"])
 @login_required
 def delete_food(food_id):
+    user_id = session["user_id"]
     db.execute("DELETE FROM FoodIngredients WHERE food_id = ?", [food_id])
-    db.execute("DELETE FROM Foods WHERE id = ?", [food_id])
+    db.execute("DELETE FROM Foods WHERE id = ? AND user_id = ?", [food_id, user_id])
     flash("Food deleted.")
     return redirect(url_for("foods.all_foods"))
 
 @foods_bp.route("/ingredients/<int:ingredient_id>/delete", methods=["POST"])
 @login_required
 def delete_ingredient(ingredient_id):
+    user_id = session["user_id"]
     db.execute("DELETE FROM FoodIngredients WHERE ingredient_id = ?", [ingredient_id])
-    db.execute("DELETE FROM Ingredients WHERE id = ?", [ingredient_id])
+    db.execute("DELETE FROM Ingredients WHERE id = ? AND user_id = ?", [ingredient_id, user_id])
     flash("Ingredient deleted.")
     return redirect(url_for("foods.all_foods"))
 
@@ -143,31 +150,37 @@ def delete_ingredient(ingredient_id):
 @foods_bp.route("/ingredients/<int:ingredient_id>/edit", methods=["GET", "POST"])
 @login_required
 def edit_ingredient(ingredient_id):
+    user_id = session["user_id"]
     if request.method == "POST":
         name = request.form.get("name")
         protein = float(request.form.get("protein", 0))
         calories = float(request.form.get("calories", 0))
         db.execute(
-            "UPDATE Ingredients SET name = ?, protein = ?, calories = ? WHERE id = ?",
-            [name, protein, calories, ingredient_id]
+            "UPDATE Ingredients SET name = ?, protein = ?, calories = ? WHERE id = ? AND user_id = ?",
+            [name, protein, calories, ingredient_id, user_id]
         )
         flash("Ingredient updated.")
         return redirect(url_for("foods.all_foods"))
 
     # GET: fetch current values
-    ingredient = db.query("SELECT * FROM Ingredients WHERE id = ?", [ingredient_id])[0]
-    return render_template("edit_ingredient.html", ingredient=ingredient)
+    ingredient = db.query("SELECT * FROM Ingredients WHERE id = ? AND user_id = ?", [ingredient_id, user_id])
+    if not ingredient:
+        flash("Ingredient not found.")
+        return redirect(url_for("foods.all_foods"))
+
+    return render_template("edit_ingredient.html", ingredient=ingredient[0])
 
 @foods_bp.route("/foods/<int:food_id>/edit", methods=["GET", "POST"])
 @login_required
 def edit_food(food_id):
+    user_id = session["user_id"]
     if request.method == "POST":
         food_name = request.form.get("food_name")
         food_class = request.form.get("food_class")
 
         db.execute(
-            "UPDATE Foods SET name = ?, class = ? WHERE id = ?",
-            [food_name, food_class, food_id]
+            "UPDATE Foods SET name = ?, class = ? WHERE id = ? AND user_id = ?",
+            [food_name, food_class, food_id, user_id]
         )
 
         # Update the FoodIngredients
@@ -175,7 +188,7 @@ def edit_food(food_id):
         db.execute("DELETE FROM FoodIngredients WHERE food_id = ?", [food_id])
 
         # Then, insert new entries
-        ingredients = db.query("SELECT * FROM Ingredients")
+        ingredients = db.query("SELECT * FROM Ingredients WHERE user_id = ?", [user_id])
         for ing in ingredients:
             qty = float(request.form.get(f"ingredient_{ing['id']}", 0))
             if qty > 0:
@@ -188,12 +201,10 @@ def edit_food(food_id):
         return redirect(url_for("foods.all_foods"))
 
     # GET: fetch current values
-    food = db.query("SELECT * FROM Foods WHERE id = ?", [food_id])[0]
-    food_ingredients = db.query("""
-        SELECT fi.quantity, i.id, i.name, i.protein, i.calories
-        FROM FoodIngredients fi
-        JOIN Ingredients i ON fi.ingredient_id = i.id
-        WHERE fi.food_id = ?
-    """, [food_id])
+    food = db.query("SELECT * FROM Foods WHERE id = ? AND user_id = ?", [food_id, user_id])
+    if not food:
+        flash("Food not found.")
+        return redirect(url_for("foods.all_foods"))
 
-    return render_template("edit_food.html", food=food, food_ingredients=food_ingredients)
+    food_ingredients = db.query(""" ... """, [food_id])
+    return render_template("edit_food.html", food=food[0], food_ingredients=food_ingredients)

@@ -9,6 +9,7 @@ CREATE TABLE Users (
 CREATE TABLE Ingredients (
     id INTEGER PRIMARY KEY,
     name TEXT,
+    user_id REFERENCES Users,
     protein REAL,
     calories INTEGER
 );
@@ -16,6 +17,7 @@ CREATE TABLE Ingredients (
 CREATE TABLE Foods (
     id INTEGER PRIMARY KEY,
     name TEXT,
+    user_id REFERENCES Users,
     class TEXT CHECK(class IN ('Breakfast/Supper', 'Lunch/Dinner', 'Snack', 'Drink'))
 );
 
