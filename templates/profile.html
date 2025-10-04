@@ -66,7 +66,12 @@
         <line x1="{{ prev_x }}" y1="{{ prev_y }}" x2="{{ x }}" y2="{{ y }}" stroke="green" stroke-width="2"/>
       {% endif %}
       <circle cx="{{ x }}" cy="{{ y }}" r="3" fill="green"/>
-      <text x="{{ x }}" y="190" text-anchor="middle" font-size="10">{{ row.day[5:] }}</text>
+      <text x="{{ x }}" y="192" text-anchor="middle" font-size="10">
+        {{ row.total_calories }}kcal
+      </text>
+      <text x="{{ x }}" y="200" text-anchor="middle" font-size="10">
+        {{ row.day[5:] }}
+      </text>
       {% set prev_x = x %}
       {% set prev_y = y %}
       {% set x = x + step %}
@@ -96,7 +101,10 @@
         width="{{ bar_width }}" 
         height="{{ bar_height }}" 
         fill="steelblue"/>
-      <text x="{{ x + bar_width/2 }}" y="190" text-anchor="middle" font-size="10">
+      <text x="{{ x + bar_width/2 }}" y="192" text-anchor="middle" font-size="10">
+        {{ row.total_protein }}g
+      </text>
+      <text x="{{ x + bar_width/2 }}" y="200" text-anchor="middle" font-size="10">
         {{ row.day[5:] }}
       </text>
       {% set x = x + bar_width + spacing %}
