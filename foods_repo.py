@@ -89,6 +89,15 @@ def record_eaten(user_id, food_id, quantity, protein, calories):
 def get_user_eaten(user_id, limit=50):
     return db.query("SELECT * FROM Eaten WHERE user_id = ? ORDER BY time DESC LIMIT ?", [user_id, limit])
 
+def get_user_daily_intake(user_id):
+    return db.query("""
+        SELECT
+            ROUND(SUM(e.eaten_protein), 2) AS total_protein,
+            ROUND(SUM(e.eaten_calories), 2) AS total_calories
+        FROM Eaten e
+        WHERE e.user_id = ?
+          AND date(e.time) = date('now', 'localtime')
+    """, [user_id])[0]
 
 # ---------------- Update totals ----------------
 def update_food_totals(food_id):

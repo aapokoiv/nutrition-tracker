@@ -208,7 +208,7 @@ def eat_food(food_id):
     user_id = session["user_id"]
     qty = float(request.form.get("quantity", 1.0))
     # Fetch food totals
-    food = foods_repo.get_food_nutrientset(food_id)
+    food = foods_repo.get_food_nutrients(food_id)
     if not food:
         flash("Food not found.")
         return redirect(url_for("foods.all_foods"))

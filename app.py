@@ -1,6 +1,6 @@
 from flask import Flask, render_template, session, request, redirect, flash, get_flashed_messages, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
-import config, users
+import config, users, foods_repo
 from foods import foods_bp
 from auth import login_required
 
@@ -13,7 +13,8 @@ app.register_blueprint(foods_bp)
 @login_required
 def index():
     messages = get_flashed_messages()
-    user_id = session.get("user_id")
+    user_id = session["user_id"]
+    intake = foods_repo.get_user_daily_intake(user_id)
 
     user = users.get_user_by_id(user_id)
     if not user:
@@ -22,9 +23,11 @@ def index():
 
     return render_template("index.html", 
                            messages=messages, 
-                           pt=user["protein_target"], 
-                           ct=user["calorie_target"], 
-                           user=user["username"])
+                           pt = user["protein_target"], 
+                           ct = user["calorie_target"], 
+                           pi = intake["total_protein"],
+                           ci = intake["total_calories"],
+                           user = user["username"])
 
 @app.template_filter("sum_values")
 def sum_ingredient_values(items, attribute, quantity_attribute="quantity"):
@@ -60,6 +63,8 @@ def update_calories():
     users.update_calorie_target(session["user_id"], calorie_target)
     flash("Calorie target updated.")
     return redirect(url_for("index"))
+
+
 
 
 # Registeration

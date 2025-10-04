@@ -42,10 +42,15 @@
 <h3>Existing Foods</h3>
 <table border="1" cellpadding="5">
   <tr>
-    <th>Food Name</th><th>Meal Class</th><th>Ingredients</th><th>Total Protein</th><th>Total Calories</th>
+    <th></th><th>Food Name</th><th>Meal Class</th><th>Ingredients</th><th>Total Protein</th><th>Total Calories</th>
   </tr>
   {% for food in foods_list %}
   <tr>
+    <td>
+      <form action="{{ url_for('foods.eat_food', food_id=food.id) }}" method="post" style="display:inline;">
+        <button type="submit">Eat Food</button>
+      </form>
+    </td>
     <td>{{ food.name }}</td>
     <td>{{ food.class }}</td>
     <td>
