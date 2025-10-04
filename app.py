@@ -7,8 +7,7 @@ from auth import login_required
 app = Flask(__name__)
 app.secret_key = config.secret_key
 app.register_blueprint(foods_bp)
-UPLOAD_FOLDER = "static/profile_pics"
-ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
+
 
 @app.route("/")
 @login_required
@@ -16,6 +15,7 @@ def index():
     messages = get_flashed_messages()
     user_id = session["user_id"]
     intake = foods_repo.get_user_daily_intake(user_id)
+    eaten_today = foods_repo.get_user_eaten_today(user_id)
 
     user = users.get_user_by_id(user_id)
     if not user:
@@ -29,7 +29,8 @@ def index():
                            pi = intake["total_protein"],
                            ci = intake["total_calories"],
                            user = user["username"],
-                           user_id = user_id)
+                           user_id = user_id,
+                           foods = eaten_today)
 
 @app.template_filter("sum_values")
 def sum_ingredient_values(items, attribute, quantity_attribute="quantity"):
@@ -98,13 +99,15 @@ def profile(user_id):
             flash("Profile picture updated successfully.")
             return redirect(url_for("profile", user_id=user_id))
 
-    summary = user_30day_summary(user_id)
+    summary30 = user_30day_summary(user_id)
+    summary7 = users.user_nutrition_stats(user_id, 7)
 
     return render_template(
         "profile.html",
         messages=messages,
         user = user,
-        summary = summary
+        summary30 = summary30,
+        summary7 = summary7
     )
 
 def user_30day_summary(user_id):

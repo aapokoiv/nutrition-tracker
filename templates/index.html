@@ -33,11 +33,23 @@
 
 
   <h5>Eaten today</h5>
-  <ul>
-    {% for food in foods %}
-    <li>{{ food }}</li>
-    {% endfor %}
-  </ul>
+  {% if foods %}
+    <ul>
+      {% for food in foods %}
+        <li>
+          <strong>{{ food.food_name }}</strong>
+          — {{ food.eaten_calories }} kcal, {{ food.eaten_protein }} g protein
+          <small>at {{ food.eaten_time }}</small>
+          <form action="{{ url_for('foods.uneat_food', eaten_id=food.eaten_id) }}" method="post" style="display:inline;">
+            <button type="submit">Un-eat</button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No foods eaten yet today.</p>
+  {% endif %}
+
   <a href="{{ url_for('foods.all_foods') }}">Foods</a>
 
   <a href="{{ url_for('profile', user_id=user_id) }}">Profile</a>

@@ -219,6 +219,14 @@ def eat_food(food_id):
     flash("Recorded as eaten.")
     return redirect(request.referrer or url_for("foods.all_foods"))
 
+@foods_bp.route("/uneat/<int:eaten_id>", methods=["POST"])
+@login_required
+def uneat_food(eaten_id):
+    user_id = session["user_id"]
+    foods_repo.delete_eaten(user_id, eaten_id)
+    flash("Food removed from today's eaten list.")
+    return redirect(url_for("index"))
+
 @foods_bp.route("/foods/<int:food_id>/like", methods=["POST"])
 @login_required
 def like_food(food_id):

@@ -83,11 +83,26 @@ def get_liked_foods(user_id):
 def record_eaten(user_id, food_id, quantity, protein, calories):
     db.execute("""
         INSERT INTO Eaten (user_id, food_id, time, quantity, eaten_protein, eaten_calories)
-        VALUES (?, ?, datetime('now'), ?, ?, ?)
+        VALUES (?, ?, datetime('now', 'localtime'), ?, ?, ?)
     """, [user_id, food_id, quantity, protein, calories])
 
-def get_user_eaten(user_id, limit=50):
-    return db.query("SELECT * FROM Eaten WHERE user_id = ? ORDER BY time DESC LIMIT ?", [user_id, limit])
+def delete_eaten(user_id, eaten_id):
+    db.execute("DELETE FROM Eaten WHERE id = ? AND user_id = ?", [eaten_id, user_id])
+
+def get_user_eaten_today(user_id):
+    return db.query("""
+        SELECT e.id AS eaten_id,
+               f.name AS food_name,
+               e.quantity,
+               e.eaten_protein,
+               e.eaten_calories,
+               time(e.time) AS eaten_time
+        FROM Eaten e
+        JOIN Foods f ON e.food_id = f.id
+        WHERE e.user_id = ?
+          AND date(e.time) = date('now', 'localtime')
+        ORDER BY e.time DESC
+    """, [user_id])
 
 def get_user_daily_intake(user_id):
     return db.query("""

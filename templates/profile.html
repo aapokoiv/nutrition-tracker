@@ -7,6 +7,15 @@
 </head>
 <body>
 
+  {% set protein_values = summary7 | map(attribute='total_protein') | list %}
+  {% set max_protein = (protein_values|max) if protein_values else 0 %}
+
+  {% set calorie_values = summary7 | map(attribute='total_calories') | list %}
+  {% set max_cal = (calorie_values|max) if calorie_values else 0 %}
+
+  {% set avg_protein = (protein_values|sum / protein_values|length) if protein_values else 0 %}
+  {% set avg_cal = (calorie_values|sum / calorie_values|length) if calorie_values else 0 %}
+
   <h2>{{ user.username }}'s Profile</h2>
 
   <div>
@@ -30,18 +39,76 @@
 
   <h3>30-Day Nutrition Statistics</h3>
   <ul>
-    <li><strong>Average Protein (per day):</strong> {{ summary.avg_protein }} g, target = {{ user.protein_target }} g/day</li>
+    <li><strong>Average Protein (per day):</strong> {{ summary30.avg_protein }} g, target = {{ user.protein_target }} g/day</li>
     <li>
-      <strong>Average Calories (per day):</strong> {{ summary.avg_calories }} kcal 
+      <strong>Average Calories (per day):</strong> {{ summary30.avg_calories }} kcal 
       target = {{ user.calorie_target }} kcal/day
-      over/under from target = {{ summary.avg_calories - user.calorie_target }}
+      over/under from target = {{ summary30.avg_calories - user.calorie_target }}
     </li>
-    <li><strong>Protein Target Hit:</strong> {{ summary.hit_days }}/{{ summary.total_days }} days</li>
+    <li><strong>Protein Target Hit:</strong> {{ summary30.hit_days }}/{{ summary30.total_days }} days</li>
   </ul>
 
-  {% if summary.total_days == 0 %}
+  {% if summary30.total_days == 0 %}
   <p>No eating data recorded yet. Start by eating some foods!</p>
   {% endif %}
+
+  <h3>Calories (last 7 days)</h3>
+  <svg width="450" height="200" style="background:#f9f9f9; border:1px solid #ccc;">
+    {% set max_val = [max_cal, user.calorie_target, avg_cal]|max %}
+    {% set x = 20 %}
+    {% set step = 50 %}
+    {% set prev_x = None %}
+    {% set prev_y = None %}
+
+    {% for row in summary7 %}
+      {% set y = 180 - (row.total_calories / max_val * 150) %}
+      {% if prev_x is not none %}
+        <line x1="{{ prev_x }}" y1="{{ prev_y }}" x2="{{ x }}" y2="{{ y }}" stroke="green" stroke-width="2"/>
+      {% endif %}
+      <circle cx="{{ x }}" cy="{{ y }}" r="3" fill="green"/>
+      <text x="{{ x }}" y="190" text-anchor="middle" font-size="10">{{ row.day[5:] }}</text>
+      {% set prev_x = x %}
+      {% set prev_y = y %}
+      {% set x = x + step %}
+    {% endfor %}
+
+    <!-- Averages and targets -->
+    {% set avg_y = 180 - (avg_cal / max_val * 150) %}
+    {% set target_y = 180 - (user.calorie_target / max_val * 150) %}
+    <line x1="10" y1="{{ avg_y }}" x2="380" y2="{{ avg_y }}" stroke="orange" stroke-dasharray="4,2"/>
+    <text x="385" y="{{ avg_y + 4 }}" font-size="10" fill="orange">Avg {{ avg_cal|round(1) }}</text>
+
+    <line x1="10" y1="{{ target_y }}" x2="380" y2="{{ target_y }}" stroke="red" stroke-dasharray="4,2"/>
+    <text x="385" y="{{ target_y + 4 }}" font-size="10" fill="red">Target {{ user.calorie_target }}</text>
+  </svg>  
+
+  <h3>Protein (last 7 days)</h3>
+  <svg width="450" height="200" style="background:#f9f9f9; border:1px solid #ccc;">
+    {% set bar_width = 40 %}
+    {% set spacing = 10 %}
+    {% set x = 20 %}
+    {% set max_protein_val = [max_protein, user.protein_target]|max %}
+    {% for row in summary7 %}
+      {% set bar_height = (row.total_protein / max_protein_val * 150) if max_protein_val > 0 else 0 %}
+      <rect 
+        x="{{ x }}" 
+        y="{{ 180 - bar_height }}" 
+        width="{{ bar_width }}" 
+        height="{{ bar_height }}" 
+        fill="steelblue"/>
+      <text x="{{ x + bar_width/2 }}" y="190" text-anchor="middle" font-size="10">
+        {{ row.day[5:] }}
+      </text>
+      {% set x = x + bar_width + spacing %}
+    {% endfor %}
+
+    <!-- Target line -->
+    {% set target_y = 180 - (user.protein_target / max_protein_val * 150) %}
+    <line x1="10" y1="{{ target_y }}" x2="380" y2="{{ target_y }}" stroke="red" stroke-dasharray="4,2"/>
+    <text x="385" y="{{ target_y + 4 }}" font-size="10" fill="red">Target {{ user.protein_target }}</text>
+  </svg>
+
+  <br>
 
   <a href="{{ url_for('index') }}">Back</a>
 
