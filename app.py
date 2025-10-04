@@ -1,4 +1,4 @@
-from flask import Flask, render_template, session, request, redirect, flash, get_flashed_messages, url_for
+from flask import Flask, render_template, session, request, redirect, flash, get_flashed_messages, url_for, Response
 from werkzeug.security import generate_password_hash, check_password_hash
 import config, users, foods_repo
 from foods import foods_bp
@@ -7,7 +7,8 @@ from auth import login_required
 app = Flask(__name__)
 app.secret_key = config.secret_key
 app.register_blueprint(foods_bp)
-
+UPLOAD_FOLDER = "static/profile_pics"
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 
 @app.route("/")
 @login_required
@@ -27,7 +28,8 @@ def index():
                            ct = user["calorie_target"], 
                            pi = intake["total_protein"],
                            ci = intake["total_calories"],
-                           user = user["username"])
+                           user = user["username"],
+                           user_id = user_id)
 
 @app.template_filter("sum_values")
 def sum_ingredient_values(items, attribute, quantity_attribute="quantity"):
@@ -64,6 +66,72 @@ def update_calories():
     flash("Calorie target updated.")
     return redirect(url_for("index"))
 
+@app.route("/image/<int:user_id>")
+def show_profile_pic(user_id):
+    image = users.get_profile_picture(user_id)
+    if image:
+        return Response(image, mimetype="image/jpeg")
+    else:
+        return redirect(url_for("static", filename="profile_pics/default.jpg"))
+
+@app.route("/profile/<int:user_id>", methods=["GET", "POST"])
+@login_required
+def profile(user_id):
+    messages = get_flashed_messages()
+    user_id = session["user_id"]
+    user = users.get_user_by_id(user_id)
+
+    if request.method == "POST":
+        # handle profile picture upload
+        if "profile_picture" in request.files:
+            file = request.files["profile_picture"]
+            if not file.filename.endswith(".jpg"):
+                flash("File type not allowed")
+                return redirect(url_for("profile", user_id=user_id))
+            
+            image = file.read()
+            if len(image) > 100 * 1024:
+                flash("File size too large")
+                return redirect(url_for("profile", user_id=user_id))
+            
+            users.update_profile_picture(user_id, image)
+            flash("Profile picture updated successfully.")
+            return redirect(url_for("profile", user_id=user_id))
+
+    summary = user_30day_summary(user_id)
+
+    return render_template(
+        "profile.html",
+        messages=messages,
+        user = user,
+        summary = summary
+    )
+
+def user_30day_summary(user_id):
+    user = users.get_user_by_id(user_id)
+    protein_target = user["protein_target"] if user else 0
+
+    day_rows = users.user_nutrition_stats(user_id, 30)
+
+    if not day_rows:
+        return {
+            "avg_calories": 0,
+            "avg_protein": 0,
+            "hit_days": 0,
+            "total_days": 0
+        }
+
+    total_days = len(day_rows)
+    total_cals = sum(r["total_calories"] for r in day_rows)
+    total_prot = sum(r["total_protein"] for r in day_rows)
+    hit_days = sum(1 for r in day_rows if r["total_protein"] >= protein_target)
+
+    return {
+        "avg_calories": round(total_cals / total_days, 2),
+        "avg_protein": round(total_prot / total_days, 2),
+        "hit_days": hit_days,
+        "total_days": total_days
+    }
 
 
 

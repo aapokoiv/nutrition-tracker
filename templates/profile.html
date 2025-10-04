@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home</title>
+</head>
+<body>
+
+  <h2>{{ user.username }}'s Profile</h2>
+
+  <div>
+    <img src="{{ url_for('show_profile_pic', user_id=user.id) }}" alt="{{ user.username }}'s profile picture"/>
+  </div>
+
+  <hr>
+
+  <h3>Update Profile Picture</h3>
+  <p>Upload jpg-file, Max size 100 KB</p>
+  <form method="post" enctype="multipart/form-data">
+    <input type="file" name="profile_picture" accept="image/*" required>
+    <button type="submit">Upload</button>
+  </form>
+
+    {% for m in messages %}
+    <p style="color: red;">{{ m }}</p>
+    {% endfor %}
+
+  <hr>
+
+  <h3>30-Day Nutrition Statistics</h3>
+  <ul>
+    <li><strong>Average Protein (per day):</strong> {{ summary.avg_protein }} g, target = {{ user.protein_target }} g/day</li>
+    <li>
+      <strong>Average Calories (per day):</strong> {{ summary.avg_calories }} kcal 
+      target = {{ user.calorie_target }} kcal/day
+      over/under from target = {{ summary.avg_calories - user.calorie_target }}
+    </li>
+    <li><strong>Protein Target Hit:</strong> {{ summary.hit_days }}/{{ summary.total_days }} days</li>
+  </ul>
+
+  {% if summary.total_days == 0 %}
+  <p>No eating data recorded yet. Start by eating some foods!</p>
+  {% endif %}
+
+  <a href="{{ url_for('index') }}">Back</a>
+
+</body>
+</html>

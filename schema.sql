@@ -2,6 +2,7 @@ CREATE TABLE Users (
     id INTEGER PRIMARY KEY,
     username TEXT UNIQUE,
     password_hash TEXT,
+    profile_pic BLOB,
     protein_target INTEGER,
     calorie_target INTEGER
 );

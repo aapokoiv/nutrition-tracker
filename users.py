@@ -21,3 +21,25 @@ def update_protein_target(user_id, protein_target):
 def update_calorie_target(user_id, calorie_target):
     sql = "UPDATE Users SET calorie_target = ? WHERE id = ?"
     db.execute(sql, [calorie_target, user_id])
+
+def update_profile_picture(user_id, image):
+    sql = "UPDATE Users SET profile_pic = ? WHERE id = ?"
+    db.execute(sql, [image, user_id])
+
+def get_profile_picture(user_id):
+    sql = "SELECT profile_pic FROM Users WHERE id = ?"
+    result = db.query(sql, [user_id])
+    return result[0][0] if result else None
+
+def user_nutrition_stats(user_id, days):
+    return db.query("""
+        SELECT 
+            date(e.time) AS day,
+            ROUND(SUM(e.eaten_protein), 2) AS total_protein,
+            ROUND(SUM(e.eaten_calories), 2) AS total_calories
+        FROM Eaten e
+        WHERE e.user_id = ?
+          AND date(e.time) >= date('now', '-' || ? || ' days', 'localtime')
+        GROUP BY day
+        ORDER BY day DESC
+    """, [user_id, days])

@@ -38,10 +38,12 @@
     <li>{{ food }}</li>
     {% endfor %}
   </ul>
-  <a href="/foods">Foods</a>
+  <a href="{{ url_for('foods.all_foods') }}">Foods</a>
+
+  <a href="{{ url_for('profile', user_id=user_id) }}">Profile</a>
 
   <p>Logged in as {{ user }}</p>
-  <a href="/logout">Logout</a>
+  <a href="{{ url_for('logout') }}">Logout</a>
 
 </body>
 </html>

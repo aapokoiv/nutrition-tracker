@@ -1,129 +1,141 @@
-<h2>Foods and Ingredients</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home</title>
+</head>
+<body>
 
-{% for m in messages %}
-<p style="color: green;">{{ m }}</p>
-{% endfor %}
+  <h2>Foods and Ingredients</h2>
 
-<hr>
-
-<form method="get" style="margin-bottom:1em;">
-  <label>Ingredient sort:</label>
-  <select name="ing_sort_by">
-    <option value="name" {% if ing_sort_by=='name' %}selected{% endif %}>Name</option>
-    <option value="protein" {% if ing_sort_by=='protein' %}selected{% endif %}>Protein</option>
-    <option value="calories" {% if ing_sort_by=='calories' %}selected{% endif %}>Calories</option>
-  </select>
-  <select name="ing_sort_dir">
-    <option value="asc" {% if ing_sort_dir=='asc' %}selected{% endif %}>↑</option>
-    <option value="desc" {% if ing_sort_dir=='desc' %}selected{% endif %}>↓</option>
-  </select>
-
-  &nbsp; &nbsp;
-
-  <label>Food sort:</label>
-  <select name="food_sort_by">
-    <option value="name" {% if food_sort_by=='name' %}selected{% endif %}>Name</option>
-    <option value="class" {% if food_sort_by=='class' %}selected{% endif %}>Class</option>
-    <option value="total_protein" {% if food_sort_by=='total_protein' %}selected{% endif %}>Total Protein</option>
-    <option value="total_calories" {% if food_sort_by=='total_calories' %}selected{% endif %}>Total Calories</option>
-  </select>
-  <select name="food_sort_dir">
-    <option value="asc" {% if food_sort_dir=='asc' %}selected{% endif %}>↑</option>
-    <option value="desc" {% if food_sort_dir=='desc' %}selected{% endif %}>↓</option>
-  </select>
-
-  <button type="submit">Apply</button>
-</form>
-
-<a href="{{ url_for('index') }}">Back</a>
-
-<hr>
-
-<h3>Existing Foods</h3>
-<table border="1" cellpadding="5">
-  <tr>
-    <th></th><th>Food Name</th><th>Meal Class</th><th>Ingredients</th><th>Total Protein</th><th>Total Calories</th>
-  </tr>
-  {% for food in foods_list %}
-  <tr>
-    <td>
-      <form action="{{ url_for('foods.eat_food', food_id=food.id) }}" method="post" style="display:inline;">
-        <button type="submit">Eat Food</button>
-      </form>
-    </td>
-    <td>{{ food.name }}</td>
-    <td>{{ food.class }}</td>
-    <td>
-      {% for ing in food.ingredients %}
-        {{ ing.quantity }} x {{ ing.name }}<br>
-      {% endfor %}
-    </td>
-    <td>
-      {{ food.ingredients | sum_values(attribute='protein', quantity_attribute='quantity') }}
-    </td>
-    <td>
-      {{ food.ingredients | sum_values(attribute='calories', quantity_attribute='quantity') }}
-    </td>
-    <td>
-      <form action="{{ url_for('foods.delete_food', food_id=food.id) }}" method="post" style="display:inline;">
-        <button type="submit">Delete Food</button>
-      </form>
-    </td>
-    <td>
-      <a href="{{ url_for('foods.edit_food', food_id=food.id) }}">Edit</a>
-    </td>
-  </tr>
-  {% endfor %}
-</table>
-
-<h3>Add Food</h3>
-<form method="post">
-  <input type="text" name="food_name" placeholder="Food Name" required>
-  <select name="food_class" required>
-    <option value="Breakfast/Supper">Breakfast/Supper</option>
-    <option value="Lunch/Dinner">Lunch/Dinner</option>
-    <option value="Snack">Snack</option>
-    <option value="Drink">Drink</option>
-  </select><br><br>
-
-  <label>Ingredients (set quantity ≥1 to include):</label><br>
-  {% for ing in ingredients %}
-    <input type="number" step="0.01" name="ingredient_{{ ing.id }}" min="0" placeholder="0">
-    {{ ing.name }} (Protein: {{ ing.protein }}, Calories: {{ ing.calories }})<br>
+  {% for m in messages %}
+  <p style="color: green;">{{ m }}</p>
   {% endfor %}
 
-  <button type="submit" name="food_submit">Add Food</button>
-  <input type="checkbox" id="is_public" name="is_public" checked><label for="is_public">Public?</label>
-</form>
+  <hr>
 
-<hr>
+  <form method="get" style="margin-bottom:1em;">
+    <label>Ingredient sort:</label>
+    <select name="ing_sort_by">
+      <option value="name" {% if ing_sort_by=='name' %}selected{% endif %}>Name</option>
+      <option value="protein" {% if ing_sort_by=='protein' %}selected{% endif %}>Protein</option>
+      <option value="calories" {% if ing_sort_by=='calories' %}selected{% endif %}>Calories</option>
+    </select>
+    <select name="ing_sort_dir">
+      <option value="asc" {% if ing_sort_dir=='asc' %}selected{% endif %}>↑</option>
+      <option value="desc" {% if ing_sort_dir=='desc' %}selected{% endif %}>↓</option>
+    </select>
 
-<h3>Existing Ingredients</h3>
-<table border="1" cellpadding="5">
-  <tr><th>Name</th><th>Protein</th><th>Calories</th></tr>
-  {% for ing in ingredients %}
-  <tr>
-    <td>{{ ing.name }}</td>
-    <td>{{ ing.protein }}</td>
-    <td>{{ ing.calories }}</td>
-    <td>
-      <form action="{{ url_for('foods.delete_ingredient', ingredient_id=ing.id) }}"
-            method="post" style="display:inline;">
-        <button type="submit">Delete</button>
-      </form>
-    </td>
-    <td>
-      <a href="{{ url_for('foods.edit_ingredient', ingredient_id=ing.id) }}">Edit</a>
-    </td>
-  </tr>
-  {% endfor %}
-</table>
-<p>deleting a ingredient removes it from all foods, if it is the last ingredient in a food; the food is deleted</p>
+    &nbsp; &nbsp;
 
-<h3>Add Ingredient</h3>
-<form method="post">
-  <input type="text" name="ingredient_name" placeholder="Ingredient Name" required>
-  <input type="number" step="0.01" name="ingredient_protein" placeholder="Protein (g)" min="0" required>
-  <input type="number" step="0.01" name="ingredient_calories" placeholder="Calories" min="0" required>
-  <button type="submit" name="ingredient_submit">Add Ingredient</button>
-</form>
+    <label>Food sort:</label>
+    <select name="food_sort_by">
+      <option value="name" {% if food_sort_by=='name' %}selected{% endif %}>Name</option>
+      <option value="class" {% if food_sort_by=='class' %}selected{% endif %}>Class</option>
+      <option value="total_protein" {% if food_sort_by=='total_protein' %}selected{% endif %}>Total Protein</option>
+      <option value="total_calories" {% if food_sort_by=='total_calories' %}selected{% endif %}>Total Calories</option>
+    </select>
+    <select name="food_sort_dir">
+      <option value="asc" {% if food_sort_dir=='asc' %}selected{% endif %}>↑</option>
+      <option value="desc" {% if food_sort_dir=='desc' %}selected{% endif %}>↓</option>
+    </select>
+
+    <button type="submit">Apply</button>
+  </form>
+
+  <a href="{{ url_for('index') }}">Back</a>
+
+  <hr>
+
+  <h3>Existing Foods</h3>
+  <table border="1" cellpadding="5">
+    <tr>
+      <th></th><th>Food Name</th><th>Meal Class</th><th>Ingredients</th><th>Total Protein</th><th>Total Calories</th>
+    </tr>
+    {% for food in foods_list %}
+    <tr>
+      <td>
+        <form action="{{ url_for('foods.eat_food', food_id=food.id) }}" method="post" style="display:inline;">
+          <button type="submit">Eat Food</button>
+        </form>
+      </td>
+      <td>{{ food.name }}</td>
+      <td>{{ food.class }}</td>
+      <td>
+        {% for ing in food.ingredients %}
+          {{ ing.quantity }} x {{ ing.name }}<br>
+        {% endfor %}
+      </td>
+      <td>
+        {{ food.ingredients | sum_values(attribute='protein', quantity_attribute='quantity') }}
+      </td>
+      <td>
+        {{ food.ingredients | sum_values(attribute='calories', quantity_attribute='quantity') }}
+      </td>
+      <td>
+        <form action="{{ url_for('foods.delete_food', food_id=food.id) }}" method="post" style="display:inline;">
+          <button type="submit">Delete Food</button>
+        </form>
+      </td>
+      <td>
+        <a href="{{ url_for('foods.edit_food', food_id=food.id) }}">Edit</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <h3>Add Food</h3>
+  <form method="post">
+    <input type="text" name="food_name" placeholder="Food Name" required>
+    <select name="food_class" required>
+      <option value="Breakfast/Supper">Breakfast/Supper</option>
+      <option value="Lunch/Dinner">Lunch/Dinner</option>
+      <option value="Snack">Snack</option>
+      <option value="Drink">Drink</option>
+    </select><br><br>
+
+    <label>Ingredients (set quantity ≥1 to include):</label><br>
+    {% for ing in ingredients %}
+      <input type="number" step="0.01" name="ingredient_{{ ing.id }}" min="0" placeholder="0">
+      {{ ing.name }} (Protein: {{ ing.protein }}, Calories: {{ ing.calories }})<br>
+    {% endfor %}
+
+    <button type="submit" name="food_submit">Add Food</button>
+    <input type="checkbox" id="is_public" name="is_public" checked><label for="is_public">Public?</label>
+  </form>
+
+  <hr>
+
+  <h3>Existing Ingredients</h3>
+  <table border="1" cellpadding="5">
+    <tr><th>Name</th><th>Protein</th><th>Calories</th></tr>
+    {% for ing in ingredients %}
+    <tr>
+      <td>{{ ing.name }}</td>
+      <td>{{ ing.protein }}</td>
+      <td>{{ ing.calories }}</td>
+      <td>
+        <form action="{{ url_for('foods.delete_ingredient', ingredient_id=ing.id) }}"
+              method="post" style="display:inline;">
+          <button type="submit">Delete</button>
+        </form>
+      </td>
+      <td>
+        <a href="{{ url_for('foods.edit_ingredient', ingredient_id=ing.id) }}">Edit</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  <p>deleting a ingredient removes it from all foods, if it is the last ingredient in a food; the food is deleted</p>
+
+  <h3>Add Ingredient</h3>
+  <form method="post">
+    <input type="text" name="ingredient_name" placeholder="Ingredient Name" required>
+    <input type="number" step="0.01" name="ingredient_protein" placeholder="Protein (g)" min="0" required>
+    <input type="number" step="0.01" name="ingredient_calories" placeholder="Calories" min="0" required>
+    <button type="submit" name="ingredient_submit">Add Ingredient</button>
+  </form>
+
+</body>
+</html>
