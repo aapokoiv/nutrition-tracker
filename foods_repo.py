@@ -69,12 +69,46 @@ def delete_food_ingredients(food_id):
     db.execute("DELETE FROM FoodIngredients WHERE food_id = ?", [food_id])
 
 def search_public_foods(search_query):
-    return db.query("""
+    # Get public foods that match the search query
+    food_rows = db.query("""
         SELECT f.*, u.username
         FROM Foods f
         JOIN Users u ON f.user_id = u.id
         WHERE f.is_public = 1 AND f.name LIKE ?
     """, [f"%{search_query}%"])
+
+    # Prepare a list to store foods with their ingredients
+    results = []
+    for food in food_rows:
+        # Create a new dictionary for the food
+        food_dict = {
+            'id': food['id'],
+            'name': food['name'],
+            'class': food['class'],
+            'total_protein': food['total_protein'],
+            'total_calories': food['total_calories'],
+            'username': food['username'],
+            'ingredients': []  # Initialize an empty list for ingredients
+        }
+
+        # Fetch ingredients for each food
+        ingredients = db.query("""
+            SELECT i.name, fi.quantity
+            FROM FoodIngredients fi
+            JOIN Ingredients i ON fi.ingredient_id = i.id
+            WHERE fi.food_id = ?
+        """, [food['id']])
+        
+        # Add ingredients to the food_dict
+        for ing in ingredients:
+            food_dict['ingredients'].append({
+                'name': ing['name'],
+                'quantity': ing['quantity']
+            })
+
+        results.append(food_dict)
+
+    return results
 
 # ---------------- Likes ----------------
 def like_food(user_id, food_id):
@@ -84,11 +118,47 @@ def unlike_food(user_id, food_id):
     db.execute("DELETE FROM Likes WHERE user_id = ? AND food_id = ?", [user_id, food_id])
 
 def get_liked_foods(user_id):
-    return db.query("""
-        SELECT f.* FROM Foods f
+    # Get all liked foods
+    food_rows = db.query("""
+        SELECT f.*, u.username
+        FROM Foods f
         JOIN Likes l ON f.id = l.food_id
+        JOIN Users u ON f.user_id = u.id
         WHERE l.user_id = ?
     """, [user_id])
+
+    # Prepare a list to store liked foods with their ingredients
+    liked_foods = []
+    for food in food_rows:
+        # Create a new dictionary for the food
+        food_dict = {
+            'id': food['id'],
+            'name': food['name'],
+            'class': food['class'],
+            'total_protein': food['total_protein'],
+            'total_calories': food['total_calories'],
+            'username': food['username'],
+            'ingredients': []  # Initialize an empty list for ingredients
+        }
+
+        # Fetch ingredients for each food
+        ingredients = db.query("""
+            SELECT i.name, fi.quantity
+            FROM FoodIngredients fi
+            JOIN Ingredients i ON fi.ingredient_id = i.id
+            WHERE fi.food_id = ?
+        """, [food['id']])
+        
+        # Add ingredients to the food_dict
+        for ing in ingredients:
+            food_dict['ingredients'].append({
+                'name': ing['name'],
+                'quantity': ing['quantity']
+            })
+
+        liked_foods.append(food_dict)
+
+    return liked_foods
 
 # ---------------- Eaten ----------------
 def record_eaten(user_id, food_id, quantity, protein, calories):

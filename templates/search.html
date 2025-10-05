@@ -16,21 +16,27 @@
   {% endfor %}
 
   {% if results %}
-    <h2>Results:</h2>
-    <ul>
+  <h2>Results:</h2>
+  <ul>
       {% for food in results %}
-        <li>
-          <h3>{{ food.name }}</h3>
-          <p>Class: {{ food.class }}</p>
-          <p>Added by: {{ food.username }}</p>
-          <p>Total Protein: {{ food.total_protein }}</p>
-          <p>Total Calories: {{ food.total_calories }}</p>
-          <form action="{{ url_for('foods.like_food', food_id=food.id) }}" method="POST">
-            <button type="submit">Like</button>
-          </form>
-        </li>
+          <li>
+              <h3>{{ food.name }}</h3>
+              <p>Class: {{ food.class }}</p>
+              <p>Added by: {{ food.username }}</p>
+              <p>Ingredients:</p>
+              <ul>
+                  {% for ing in food.ingredients %}
+                      <li>{{ ing.quantity }} x {{ ing.name }}</li>
+                  {% endfor %}
+              </ul>
+              <p>Total Protein: {{ food.total_protein }}</p>
+              <p>Total Calories: {{ food.total_calories }}</p>
+              <form action="{{ url_for('foods.like_food', food_id=food.id) }}" method="POST">
+                  <button type="submit">Like</button>
+              </form>
+          </li>
       {% endfor %}
-    </ul>
+  </ul>
   {% else %}
     <p>No results found for your search.</p>
   {% endif %}
