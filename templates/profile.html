@@ -27,6 +27,7 @@
   <h3>Update Profile Picture</h3>
   <p>Upload jpg-file, Max size 100 KB</p>
   <form method="post" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
     <input type="file" name="profile_picture" accept="image/*" required>
     <button type="submit">Upload</button>
   </form>

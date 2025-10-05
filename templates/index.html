@@ -18,7 +18,8 @@
   <p>Current intake: {{ pi or 0 }} g</p>
   <form action="{{ url_for('update_protein') }}" method="post">
     <label for="protein_target">Update protein target:</label><br>
-    <input type="number" name="protein_target" id="protein_target" min="0" required>
+    <input type="number" name="protein_target" id="protein_target" min="0" max="1000000" required>
+    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
     <button type="submit">Update protein target</button>
   </form>
 
@@ -27,7 +28,8 @@
   <p>Current intake: {{ ci or 0}} kcal</p>
   <form action="{{ url_for('update_calories') }}" method="post">
     <label for="calorie_target">Update calorie target:</label><br>
-    <input type="number" name="calorie_target" id="calorie_target" min="0" required>
+    <input type="number" name="calorie_target" id="calorie_target" min="0" max="1000000" required>
+    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
     <button type="submit">Update calorie target</button>
   </form>
 
@@ -41,6 +43,7 @@
           — {{ food.eaten_calories }} kcal, {{ food.eaten_protein }} g protein
           <small>at {{ food.eaten_time }}</small>
           <form action="{{ url_for('foods.uneat_food', eaten_id=food.eaten_id) }}" method="post" style="display:inline;">
+            <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
             <button type="submit">Un-eat</button>
           </form>
         </li>

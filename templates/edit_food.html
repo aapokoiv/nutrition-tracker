@@ -1,5 +1,6 @@
 <h2>Edit Food</h2>
 <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
     <label for="food_name">Food Name:</label>
     <input type="text" name="food_name" value="{{ food.name }}" required><br>
 

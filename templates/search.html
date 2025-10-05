@@ -7,6 +7,7 @@
 <body>
   <h1>Search Public Foods</h1>
   <form method="GET" action="{{ url_for('foods.search_foods') }}">
+    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
     <input type="text" name="search" placeholder="Search for foods..." value="{{ search_query }}">
     <button type="submit">Search</button>
   </form>
@@ -18,24 +19,25 @@
   {% if results %}
   <h2>Results:</h2>
   <ul>
-      {% for food in results %}
-          <li>
-              <h3>{{ food.name }}</h3>
-              <p>Class: {{ food.class }}</p>
-              <p>Added by: {{ food.username }}</p>
-              <p>Ingredients:</p>
-              <ul>
-                  {% for ing in food.ingredients %}
-                      <li>{{ ing.quantity }} x {{ ing.name }}</li>
-                  {% endfor %}
-              </ul>
-              <p>Total Protein: {{ food.total_protein }}</p>
-              <p>Total Calories: {{ food.total_calories }}</p>
-              <form action="{{ url_for('foods.like_food', food_id=food.id) }}" method="POST">
-                  <button type="submit">Like</button>
-              </form>
-          </li>
-      {% endfor %}
+    {% for food in results %}
+      <li>
+        <h3>{{ food.name }}</h3>
+        <p>Class: {{ food.class }}</p>
+        <p>Added by: {{ food.username }}</p>
+        <p>Ingredients:</p>
+        <ul>
+          {% for ing in food.ingredients %}
+            <li>{{ ing.quantity }} x {{ ing.name }}</li>
+          {% endfor %}
+        </ul>
+        <p>Total Protein: {{ food.total_protein }}</p>
+        <p>Total Calories: {{ food.total_calories }}</p>
+          <form action="{{ url_for('foods.like_food', food_id=food.id) }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+            <button type="submit">Like</button>
+          </form>
+      </li>
+    {% endfor %}
   </ul>
   {% else %}
     <p>No results found for your search.</p>

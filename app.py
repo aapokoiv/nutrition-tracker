@@ -1,9 +1,10 @@
 from flask import Flask, render_template, session, request, redirect, flash, get_flashed_messages, url_for, Response
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import date, timedelta
+import secrets
 import config, users, foods_repo
 from foods import foods_bp
-from auth import login_required
+from auth import login_required, check_csrf
 
 app = Flask(__name__)
 app.secret_key = config.secret_key
@@ -44,9 +45,10 @@ def sum_ingredient_values(items, attribute, quantity_attribute="quantity"):
 @app.route("/update-protein", methods=["POST"])
 @login_required
 def update_protein():
+    check_csrf()
     protein_target = request.form.get("protein_target", type=int)
 
-    if protein_target is None or protein_target < 0:
+    if protein_target is None or protein_target < 0 or protein_target > 1000000:
         flash("Invalid protein target. Please enter a positive number.")
         return redirect(url_for("index"))
 
@@ -58,9 +60,10 @@ def update_protein():
 @app.route("/update-calories", methods=["POST"])
 @login_required
 def update_calories():
+    check_csrf()
     calorie_target = request.form.get("calorie_target", type=int)
 
-    if calorie_target is None or calorie_target < 0:
+    if calorie_target is None or calorie_target < 0 or calorie_target > 1000000:
         flash("Invalid calorie target. Please enter a positive number.")
         return redirect(url_for("index"))
 
@@ -206,6 +209,7 @@ def login():
             return redirect(url_for("login"))
 
         session["user_id"] = user["id"]
+        session["csrf_token"] = secrets.token_hex(16)
         flash("Logged in successfully")
         return redirect(url_for("index"))
 

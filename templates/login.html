@@ -4,18 +4,18 @@
     <title>Login</title>
 </head>
 <body>
-    {% for m in messages %}
-        <p style="color: red;">{{ m }}</p>
-    {% endfor %}
+  {% for m in messages %}
+    <p style="color: red;">{{ m }}</p>
+  {% endfor %}
 
-    <p>Please log in</p>
+  <p>Please log in</p>
 
-    <form action="{{ url_for('login') }}" method="post">
-        <p>Username: <input type="text" name="username" required></p>
-        <p>Password: <input type="password" name="password" required></p>
-        <input type="submit" value="Login">
-    </form>
+  <form action="{{ url_for('login') }}" method="post">
+    <p>Username: <input type="text" name="username" required></p>
+    <p>Password: <input type="password" name="password" required></p>
+    <input type="submit" value="Login">
+  </form>
 
-    <p>Don't have an account? <a href="{{ url_for('register') }}">Register</a></p>
+  <p>Don't have an account? <a href="{{ url_for('register') }}">Register</a></p>
 </body>
 </html>

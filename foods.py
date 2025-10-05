@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, get_flashed_messages, session
 import foods_repo
-from auth import login_required
+from auth import login_required, check_csrf
 
 foods_bp = Blueprint("foods", __name__, template_folder="templates")
 
@@ -133,6 +133,7 @@ def search_foods():
 @foods_bp.route("/foods/<int:food_id>/delete", methods=["POST"])
 @login_required
 def delete_food(food_id):
+    check_csrf()
     foods_repo.delete_food(session["user_id"], food_id)
     flash("Food deleted.")
     return redirect(url_for("foods.all_foods"))
@@ -140,6 +141,7 @@ def delete_food(food_id):
 @foods_bp.route("/ingredients/<int:ingredient_id>/delete", methods=["POST"])
 @login_required
 def delete_ingredient(ingredient_id):
+    check_csrf()
     user_id = session["user_id"]
     foods_repo.delete_ingredient(user_id, ingredient_id)
     flash("Ingredient deleted.")
@@ -149,6 +151,7 @@ def delete_ingredient(ingredient_id):
 @foods_bp.route("/ingredients/<int:ingredient_id>/edit", methods=["GET", "POST"])
 @login_required
 def edit_ingredient(ingredient_id):
+    check_csrf()
     user_id = session["user_id"]
     if request.method == "POST":
         name = request.form.get("name")
@@ -169,6 +172,7 @@ def edit_ingredient(ingredient_id):
 @foods_bp.route("/foods/<int:food_id>/edit", methods=["GET", "POST"])
 @login_required
 def edit_food(food_id):
+    check_csrf()
     user_id = session["user_id"]
 
     if request.method == "POST":
@@ -224,6 +228,7 @@ def edit_food(food_id):
 @foods_bp.route("/foods/<int:food_id>/eat", methods=["POST"])
 @login_required
 def eat_food(food_id):
+    check_csrf()
     user_id = session["user_id"]
     qty = float(request.form.get("quantity", 1.0))
     # Fetch food totals
@@ -241,6 +246,7 @@ def eat_food(food_id):
 @foods_bp.route("/uneat/<int:eaten_id>", methods=["POST"])
 @login_required
 def uneat_food(eaten_id):
+    check_csrf()
     user_id = session["user_id"]
     foods_repo.delete_eaten(user_id, eaten_id)
     flash("Food removed from today's eaten list.")
@@ -249,6 +255,7 @@ def uneat_food(eaten_id):
 @foods_bp.route("/foods/<int:food_id>/like", methods=["POST"])
 @login_required
 def like_food(food_id):
+    check_csrf()
     user_id = session["user_id"]
     # insert ignore style: try/except on unique constraint
     try:
@@ -261,6 +268,7 @@ def like_food(food_id):
 @foods_bp.route("/foods/<int:food_id>/unlike", methods=["POST"])
 @login_required
 def unlike_food(food_id):
+    check_csrf()
     user_id = session["user_id"]
     foods_repo.unlike_food(user_id, food_id)
     flash("Removed from liked foods.")
