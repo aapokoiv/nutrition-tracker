@@ -4,7 +4,7 @@
 
 * Creating an account and logging in
 * Adding ingredients and making meals from them
-* Giving Meals a class
+* Giving meals a class
 * Modifying and deleting foods and ingredients you have added
 * Searching foods and ingredients based on name, classes or properities
 * Searching what others have added and being able to like them
