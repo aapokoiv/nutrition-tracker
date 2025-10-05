@@ -111,6 +111,7 @@ def all_foods():
         food_sort_dir=food_sort_dir
     )
 
+
 @foods_bp.route("/foods/<int:food_id>/delete", methods=["POST"])
 @login_required
 def delete_food(food_id):

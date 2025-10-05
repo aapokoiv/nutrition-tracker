@@ -41,7 +41,7 @@ def user_nutrition_stats(user_id, days):
         WHERE e.user_id = ?
           AND date(e.time) >= date('now', '-' || ? || ' days', 'localtime')
         GROUP BY day
-        ORDER BY day DESC
+        ORDER BY day
     """, [user_id, days])
 
 def user_7day_stats(user_id):

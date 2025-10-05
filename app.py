@@ -1,5 +1,6 @@
 from flask import Flask, render_template, session, request, redirect, flash, get_flashed_messages, url_for, Response
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import date, timedelta
 import config, users, foods_repo
 from foods import foods_bp
 from auth import login_required
@@ -75,6 +76,17 @@ def show_profile_pic(user_id):
     else:
         return redirect(url_for("static", filename="profile_pics/default.jpg"))
 
+# --- helper to fill missing days ---
+def fill_missing_days(summary_rows, days=7):
+    lookup = {r["day"]: r for r in summary_rows}
+    today = date.today()
+    filled = []
+    # oldest → newest
+    for i in range(days - 1, -1, -1):
+        d = (today - timedelta(days=i)).isoformat()
+        filled.append(lookup.get(d, {"day": d, "total_protein": 0.0, "total_calories": 0.0}))
+    return filled
+
 @app.route("/profile/<int:user_id>", methods=["GET", "POST"])
 @login_required
 def profile(user_id):
@@ -83,31 +95,35 @@ def profile(user_id):
     user = users.get_user_by_id(user_id)
 
     if request.method == "POST":
-        # handle profile picture upload
-        if "profile_picture" in request.files:
-            file = request.files["profile_picture"]
-            if not file.filename.endswith(".jpg"):
-                flash("File type not allowed")
-                return redirect(url_for("profile", user_id=user_id))
+        if "profile_picture" in request.files: 
+            file = request.files["profile_picture"] 
+            if not file.filename.endswith(".jpg"): 
+                flash("File type not allowed") 
+                return redirect(url_for("profile", user_id=user_id)) 
             
-            image = file.read()
-            if len(image) > 100 * 1024:
-                flash("File size too large")
-                return redirect(url_for("profile", user_id=user_id))
+            image = file.read() 
+            if len(image) > 100 * 1024: 
+                flash("File size too large") 
+                return redirect(url_for("profile", user_id=user_id)) 
             
-            users.update_profile_picture(user_id, image)
-            flash("Profile picture updated successfully.")
+            users.update_profile_picture(user_id, image) 
+            flash("Profile picture updated successfully.") 
             return redirect(url_for("profile", user_id=user_id))
 
     summary30 = user_30day_summary(user_id)
-    summary7 = users.user_nutrition_stats(user_id, 7)
+
+    # Get raw 7-day stats
+    summary7_raw = users.user_nutrition_stats(user_id, 7)
+    # Reverse, and fill missing days
+    summary7_reversed = list(reversed(summary7_raw))
+    summary7 = fill_missing_days(summary7_reversed, 7)
 
     return render_template(
         "profile.html",
         messages=messages,
-        user = user,
-        summary30 = summary30,
-        summary7 = summary7
+        user=user,
+        summary30=summary30,
+        summary7=summary7
     )
 
 def user_30day_summary(user_id):

@@ -21,7 +21,10 @@ def update_ingredient(user_id, ingredient_id, name, protein, calories):
     )
 
 def delete_ingredient(user_id, ingredient_id):
-    db.execute("DELETE FROM FoodIngredients WHERE ingredient_id = ?", [ingredient_id])
+    sql = """DELETE FROM FoodIngredients WHERE ingredient_id = ? AND food_id IN (
+    SELECT id FROM Foods WHERE user_id = ?
+    )"""
+    db.execute(sql, [ingredient_id, user_id])
     db.execute("DELETE FROM Ingredients WHERE id = ? AND user_id = ?", [ingredient_id, user_id])
 
 # ---------------- Foods ----------------
@@ -64,6 +67,14 @@ def add_food_ingredient(food_id, ingredient_id, quantity):
 
 def delete_food_ingredients(food_id):
     db.execute("DELETE FROM FoodIngredients WHERE food_id = ?", [food_id])
+
+def search_public_foods(search_query):
+    return db.query("""
+        SELECT f.*, u.username
+        FROM Foods f
+        JOIN Users u ON f.user_id = u.id
+        WHERE f.is_public = 1 AND f.name LIKE ?
+    """, [f"%{search_query}%"])
 
 # ---------------- Likes ----------------
 def like_food(user_id, food_id):
