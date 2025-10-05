@@ -111,6 +111,18 @@ def all_foods():
         food_sort_dir=food_sort_dir
     )
 
+@foods_bp.route("/search", methods=["GET"])
+@login_required
+def search_foods():
+    messages = get_flashed_messages()
+    search_query = request.args.get("search", "")
+    results = []
+
+    if search_query:
+        results = foods_repo.search_public_foods(search_query)
+
+    return render_template("search.html", messages=messages, results=results, search_query=search_query)
+
 
 @foods_bp.route("/foods/<int:food_id>/delete", methods=["POST"])
 @login_required
@@ -237,7 +249,6 @@ def like_food(food_id):
         foods_repo.like_food(user_id, food_id)
         flash("Liked.")
     except Exception:
-        # already liked or other error
         pass
     return redirect(request.referrer or url_for("foods.all_foods"))
 

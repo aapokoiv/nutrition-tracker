@@ -54,6 +54,8 @@
 
   <a href="{{ url_for('profile', user_id=user_id) }}">Profile</a>
 
+  <a href="{{ url_for('foods.search_foods') }}">Search Public Foods</a>
+
   <p>Logged in as {{ user }}</p>
   <a href="{{ url_for('logout') }}">Logout</a>
 

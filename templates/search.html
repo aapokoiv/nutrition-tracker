@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Search Public Foods</title>
+</head>
+<body>
+  <h1>Search Public Foods</h1>
+  <form method="GET" action="{{ url_for('foods.search_foods') }}">
+    <input type="text" name="search" placeholder="Search for foods..." value="{{ search_query }}">
+    <button type="submit">Search</button>
+  </form>
+
+  {% for m in messages %}
+  <p style="color: green;">{{ m }}</p>
+  {% endfor %}
+
+  {% if results %}
+    <h2>Results:</h2>
+    <ul>
+      {% for food in results %}
+        <li>
+          <h3>{{ food.name }}</h3>
+          <p>Class: {{ food.class }}</p>
+          <p>Added by: {{ food.username }}</p>
+          <p>Total Protein: {{ food.total_protein }}</p>
+          <p>Total Calories: {{ food.total_calories }}</p>
+          <form action="{{ url_for('foods.like_food', food_id=food.id) }}" method="POST">
+            <button type="submit">Like</button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No results found for your search.</p>
+  {% endif %}
+
+  <a href="{{ url_for('index') }}">Back</a>
+
+</body>
+</html>
