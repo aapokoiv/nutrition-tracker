@@ -137,5 +137,30 @@
     <button type="submit" name="ingredient_submit">Add Ingredient</button>
   </form>
 
+  <h3>Your Liked Foods</h3>
+  <table border="1" cellpadding="5">
+      <tr>
+          <th></th>
+          <th>Food Name</th>
+          <th>Meal Class</th>
+          <th>Total Protein</th>
+          <th>Total Calories</th>
+      </tr>
+      {% for food in liked_foods %}
+      <tr>
+          <td>
+              <form action="{{ url_for('foods.eat_food', food_id=food.id) }}" method="post" style="display:inline;">
+                  <button type="submit">Eat Food</button>
+              </form>
+          </td>
+          <td>{{ food.name }}</td>
+          <td>{{ food.class }}</td>
+          <td>{{ food.total_protein }}</td>
+          <td>{{ food.total_calories }}</td>
+      </tr>
+      {% endfor %}
+  </table>
+
+
 </body>
 </html>

@@ -52,6 +52,8 @@ def all_foods():
 
     rows = foods_repo.get_all(user_id)
 
+    liked_foods = foods_repo.get_liked_foods(user_id)
+
     # Reconstruct foods dict and calculate totals
     foods = {}
     for row in rows:
@@ -104,6 +106,7 @@ def all_foods():
         ingredients=ingredients,
         foods_list=foods_list,
         foods=foods,
+        liked_foods=liked_foods,
         messages=messages,
         ing_sort_by=ing_sort_by,
         ing_sort_dir=ing_sort_dir,
