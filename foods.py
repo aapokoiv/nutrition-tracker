@@ -117,15 +117,18 @@ def all_foods():
 @foods_bp.route("/search", methods=["GET"])
 @login_required
 def search_foods():
-    messages = get_flashed_messages()
     search_query = request.args.get("search", "")
-    results = []
+    page = int(request.args.get("page", 1))  # Get the current page number
+    per_page = 10  # Number of items per page
 
-    if search_query:
-        results = foods_repo.search_public_foods(search_query)
+    results = foods_repo.search_public_foods(search_query, page, per_page)
 
-    return render_template("search.html", messages=messages, results=results, search_query=search_query)
+    # Get total number of foods for pagination
+    total_foods = foods_repo.total_foods(search_query)
 
+    total_pages = (total_foods + per_page - 1) // per_page  # Calculate total pages
+
+    return render_template("search.html", results=results, search_query=search_query, page=page, total_pages=total_pages)
 
 @foods_bp.route("/foods/<int:food_id>/delete", methods=["POST"])
 @login_required

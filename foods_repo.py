@@ -68,19 +68,28 @@ def add_food_ingredient(food_id, ingredient_id, quantity):
 def delete_food_ingredients(food_id):
     db.execute("DELETE FROM FoodIngredients WHERE food_id = ?", [food_id])
 
-def search_public_foods(search_query):
-    # Get public foods that match the search query
-    food_rows = db.query("""
-        SELECT f.*, u.username
-        FROM Foods f
-        JOIN Users u ON f.user_id = u.id
-        WHERE f.is_public = 1 AND f.name LIKE ?
-    """, [f"%{search_query}%"])
+def search_public_foods(search_query, page=1, per_page=10):
+    offset = (page - 1) * per_page
 
-    # Prepare a list to store foods with their ingredients
+    if search_query:
+        food_rows = db.query("""
+            SELECT f.*, u.username
+            FROM Foods f
+            JOIN Users u ON f.user_id = u.id
+            WHERE f.is_public = 1 AND f.name LIKE ?
+            LIMIT ? OFFSET ?
+        """, [f"%{search_query}%", per_page, offset])
+    else:
+        food_rows = db.query("""
+            SELECT f.*, u.username
+            FROM Foods f
+            JOIN Users u ON f.user_id = u.id
+            WHERE f.is_public = 1
+            LIMIT ? OFFSET ?
+        """, [per_page, offset])
+
     results = []
     for food in food_rows:
-        # Create a new dictionary for the food
         food_dict = {
             'id': food['id'],
             'name': food['name'],
@@ -88,10 +97,9 @@ def search_public_foods(search_query):
             'total_protein': food['total_protein'],
             'total_calories': food['total_calories'],
             'username': food['username'],
-            'ingredients': []  # Initialize an empty list for ingredients
+            'ingredients': []
         }
 
-        # Fetch ingredients for each food
         ingredients = db.query("""
             SELECT i.name, fi.quantity
             FROM FoodIngredients fi
@@ -99,7 +107,6 @@ def search_public_foods(search_query):
             WHERE fi.food_id = ?
         """, [food['id']])
         
-        # Add ingredients to the food_dict
         for ing in ingredients:
             food_dict['ingredients'].append({
                 'name': ing['name'],
@@ -109,6 +116,22 @@ def search_public_foods(search_query):
         results.append(food_dict)
 
     return results
+
+def total_foods(search_query):
+    if search_query:
+        total = db.query("""
+            SELECT COUNT(*)
+            FROM Foods
+            WHERE is_public = 1 AND name LIKE ?
+            """, [f"%{search_query}%"])[0][0]
+    else:
+        total = db.query("""
+        SELECT COUNT(*)
+        FROM Foods
+        WHERE is_public = 1
+        """)[0][0]
+    
+    return total
 
 # ---------------- Likes ----------------
 def like_food(user_id, food_id):
