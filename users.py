@@ -44,16 +44,3 @@ def user_nutrition_stats(user_id, days):
         ORDER BY day
     """, [user_id, days])
 
-def user_7day_stats(user_id):
-    data = db.query("""
-        SELECT 
-            date(e.time) AS day,
-            ROUND(SUM(e.eaten_protein), 2) AS total_protein,
-            ROUND(SUM(e.eaten_calories), 2) AS total_calories
-        FROM Eaten e
-        WHERE e.user_id = ?
-          AND date(e.time) >= date('now', '-7 days', 'localtime')
-        GROUP BY day
-        ORDER BY day
-    """, [user_id])
-    return data

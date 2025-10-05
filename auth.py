@@ -10,5 +10,6 @@ def login_required(f):
     return decorated_function
 
 def check_csrf():
-    if request.form["csrf_token"] != session["csrf_token"]:
+    token = request.form.get("csrf_token")
+    if not token or token != session.get("csrf_token"):
         abort(403)

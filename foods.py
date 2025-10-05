@@ -11,35 +11,6 @@ def all_foods():
     messages = get_flashed_messages()
     ingredients = foods_repo.get_user_ingredients(user_id)
 
-    if request.method == "POST":
-        if "ingredient_submit" in request.form:
-            name = request.form.get("ingredient_name")
-            protein = float(request.form.get("ingredient_protein", 0) or 0)
-            calories = float(request.form.get("ingredient_calories", 0) or 0)
-            foods_repo.add_ingredient(user_id, name, protein, calories)
-            flash(f"Ingredient '{name}' added.")
-            return redirect(url_for("foods.all_foods"))
-
-        if "food_submit" in request.form:
-            food_name = request.form.get("food_name")
-            food_class = request.form.get("food_class")
-            is_public = 1 if request.form.get("is_public") == "on" else 0
-            food_id = foods_repo.add_food(user_id, food_name, food_class, is_public)
-
-            for ing in ingredients:
-                raw_qty = request.form.get(f"ingredient_{ing['id']}", "")
-                try:
-                    qty = float(raw_qty) if raw_qty.strip() != "" else 0.0
-                except ValueError:
-                    qty = 0.0
-                if qty > 0:
-                    foods_repo.add_food_ingredient(food_id, ing["id"], qty)
-
-            foods_repo.update_food_totals(food_id)
-            flash(f"Food '{food_name}' added.")
-            return redirect(url_for("foods.all_foods"))
-
-
     ing_sort_by = request.args.get("ing_sort_by", "name")
     ing_sort_dir = request.args.get("ing_sort_dir", "asc")
     food_sort_by = request.args.get("food_sort_by", "name")
@@ -47,8 +18,6 @@ def all_foods():
 
     allowed_ing_sorts = {"name", "protein", "calories"}
     allowed_food_sorts = {"name", "class", "total_protein", "total_calories"}
-
-    # Fetch flattened foods+ingredients for total calculations
 
     rows = foods_repo.get_all(user_id)
 
@@ -117,6 +86,7 @@ def all_foods():
 @foods_bp.route("/search", methods=["GET"])
 @login_required
 def search_foods():
+    messages = get_flashed_messages()
     search_query = request.args.get("search", "")
     page = int(request.args.get("page", 1))  # Get the current page number
     per_page = 10  # Number of items per page
@@ -131,11 +101,17 @@ def search_foods():
 
     total_pages = (total_foods + per_page - 1) // per_page  # Calculate total pages
 
-    return render_template("search.html", results=results, search_query=search_query, page=page, total_pages=total_pages)
+    return render_template("search.html",
+                           messages=messages,
+                           results=results,
+                           search_query=search_query,
+                           page=page,
+                           total_pages=total_pages)
 
 @foods_bp.route("/ingredients/add", methods=["POST"])
 @login_required
 def add_ingredient():
+    check_csrf()
     user_id = session["user_id"]
     name = request.form.get("ingredient_name")
     protein = float(request.form.get("ingredient_protein", 0) or 0)
@@ -149,16 +125,18 @@ def add_ingredient():
     flash(f"Ingredient '{name}' added.")
     return redirect(url_for("foods.all_foods"))
 
+
 @foods_bp.route("/foods/add", methods=["POST"])
 @login_required
 def add_food():
+    check_csrf()
     user_id = session["user_id"]
     ingredients = foods_repo.get_user_ingredients(user_id)
     food_name = request.form.get("food_name")
     food_class = request.form.get("food_class")
     is_public = 1 if request.form.get("is_public") == "on" else 0
 
-    if not food_name or len(food_name) > 100:  
+    if not food_name or len(food_name) > 100:
         flash("Input a name with max 100 letters")
         return redirect(url_for("foods.all_foods"))
 
@@ -176,6 +154,7 @@ def add_food():
     foods_repo.update_food_totals(food_id)
     flash(f"Food '{food_name}' added.")
     return redirect(url_for("foods.all_foods"))
+
 
 @foods_bp.route("/foods/<int:food_id>/delete", methods=["POST"])
 @login_required
@@ -231,7 +210,7 @@ def edit_food(food_id):
         food_name = request.form.get("food_name")
         food_class = request.form.get("food_class")
 
-        if not food_name or len(food_name) > 100:  
+        if not food_name or len(food_name) > 100:
             flash("Input a name with max 100 letters")
             return redirect(url_for("foods.all_foods"))
 
@@ -319,7 +298,7 @@ def like_food(food_id):
         flash("Liked.")
     except Exception:
         pass
-    return redirect(request.referrer or url_for("foods.all_foods"))
+    return redirect(url_for("foods.search_foods"))
 
 @foods_bp.route("/foods/<int:food_id>/unlike", methods=["POST"])
 @login_required
@@ -329,4 +308,3 @@ def unlike_food(food_id):
     foods_repo.unlike_food(user_id, food_id)
     flash("Removed from liked foods.")
     return redirect(request.referrer or url_for("foods.all_foods"))
-

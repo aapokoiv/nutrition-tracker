@@ -41,7 +41,10 @@ def update_food(user_id, food_id, name, category):
     )
 
 def delete_food(user_id, food_id):
-    db.execute("DELETE FROM FoodIngredients WHERE food_id = ?", [food_id])
+    db.execute("""
+    DELETE FROM FoodIngredients
+    WHERE food_id IN (SELECT id FROM Foods WHERE id = ? AND user_id = ?)
+    """, [food_id, user_id])
     db.execute("DELETE FROM Foods WHERE id = ? AND user_id = ?", [food_id, user_id])
 
 def get_food(user_id, food_id):

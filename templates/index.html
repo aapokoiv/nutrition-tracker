@@ -18,7 +18,7 @@
   <p>Current intake: {{ pi or 0 }} g</p>
   <form action="{{ url_for('update_protein') }}" method="post">
     <label for="protein_target">Update protein target:</label><br>
-    <input type="number" name="protein_target" id="protein_target" min="0" max="1000000" required>
+    <input type="number" name="protein_target" id="protein_target" min="1" max="1000000" required>
     <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
     <button type="submit">Update protein target</button>
   </form>
@@ -28,7 +28,7 @@
   <p>Current intake: {{ ci or 0}} kcal</p>
   <form action="{{ url_for('update_calories') }}" method="post">
     <label for="calorie_target">Update calorie target:</label><br>
-    <input type="number" name="calorie_target" id="calorie_target" min="0" max="1000000" required>
+    <input type="number" name="calorie_target" id="calorie_target" min="1" max="1000000" required>
     <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
     <button type="submit">Update calorie target</button>
   </form>
@@ -55,7 +55,7 @@
 
   <a href="{{ url_for('foods.all_foods') }}">Foods</a>
 
-  <a href="{{ url_for('profile', user_id=user_id) }}">Profile</a>
+  <a href="{{ url_for('profile') }}">Profile</a>
 
   <a href="{{ url_for('foods.search_foods') }}">Search Public Foods</a>
 

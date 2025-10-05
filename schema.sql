@@ -3,8 +3,8 @@ CREATE TABLE Users (
     username TEXT UNIQUE,
     password_hash TEXT,
     profile_pic BLOB,
-    protein_target INTEGER,
-    calorie_target INTEGER
+    protein_target INTEGER DEFAULT 1,
+    calorie_target INTEGER DEFAULT 1
 );
 
 CREATE TABLE Ingredients (

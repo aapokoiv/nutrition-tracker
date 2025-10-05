@@ -1,7 +1,8 @@
-from flask import Flask, render_template, session, request, redirect, flash, get_flashed_messages, url_for, Response
-from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import date, timedelta
 import secrets
+from flask import Flask, render_template, session, request
+from flask import redirect, flash, get_flashed_messages, url_for, Response
+from werkzeug.security import generate_password_hash, check_password_hash
 import config, users, foods_repo
 from foods import foods_bp
 from auth import login_required, check_csrf
@@ -24,10 +25,10 @@ def index():
         session.pop("user_id", None)
         return redirect(url_for("login"))
 
-    return render_template("index.html", 
-                           messages=messages, 
-                           pt = user["protein_target"], 
-                           ct = user["calorie_target"], 
+    return render_template("index.html",
+                           messages=messages,
+                           pt = user["protein_target"],
+                           ct = user["calorie_target"],
                            pi = intake["total_protein"],
                            ci = intake["total_calories"],
                            user = user["username"],
@@ -48,7 +49,7 @@ def update_protein():
     check_csrf()
     protein_target = request.form.get("protein_target", type=int)
 
-    if protein_target is None or protein_target < 0 or protein_target > 1000000:
+    if protein_target is None or protein_target < 1 or protein_target > 1000000:
         flash("Invalid protein target. Please enter a number between 0 and 1000000.")
         return redirect(url_for("index"))
 
@@ -63,7 +64,7 @@ def update_calories():
     check_csrf()
     calorie_target = request.form.get("calorie_target", type=int)
 
-    if calorie_target is None or calorie_target < 0 or calorie_target > 1000000:
+    if calorie_target is None or calorie_target < 1 or calorie_target > 1000000:
         flash("Invalid calorie target. Please enter a number between 0 and 1000000.")
         return redirect(url_for("index"))
 
@@ -90,27 +91,27 @@ def fill_missing_days(summary_rows, days=7):
         filled.append(lookup.get(d, {"day": d, "total_protein": 0.0, "total_calories": 0.0}))
     return filled
 
-@app.route("/profile/<int:user_id>", methods=["GET", "POST"])
+@app.route("/profile", methods=["GET", "POST"])
 @login_required
-def profile(user_id):
+def profile():
     messages = get_flashed_messages()
     user_id = session["user_id"]
     user = users.get_user_by_id(user_id)
 
     if request.method == "POST":
-        if "profile_picture" in request.files: 
-            file = request.files["profile_picture"] 
-            if not file.filename.endswith(".jpg"): 
-                flash("File type not allowed") 
-                return redirect(url_for("profile", user_id=user_id)) 
-            
-            image = file.read() 
-            if len(image) > 100 * 1024: 
-                flash("File size too large") 
-                return redirect(url_for("profile", user_id=user_id)) 
-            
-            users.update_profile_picture(user_id, image) 
-            flash("Profile picture updated successfully.") 
+        if "profile_picture" in request.files:
+            file = request.files["profile_picture"]
+            if not file.filename.endswith(".jpg"):
+                flash("File type not allowed")
+                return redirect(url_for("profile", user_id=user_id))
+
+            image = file.read()
+            if len(image) > 100 * 1024:
+                flash("File size too large")
+                return redirect(url_for("profile", user_id=user_id))
+
+            users.update_profile_picture(user_id, image)
+            flash("Profile picture updated successfully.")
             return redirect(url_for("profile", user_id=user_id))
 
     summary30 = user_30day_summary(user_id)
@@ -131,7 +132,7 @@ def profile(user_id):
 
 def user_30day_summary(user_id):
     user = users.get_user_by_id(user_id)
-    protein_target = user["protein_target"] if user else 0
+    protein_target = int(user["protein_target"] or 0)
 
     day_rows = users.user_nutrition_stats(user_id, 30)
 
@@ -144,9 +145,9 @@ def user_30day_summary(user_id):
         }
 
     total_days = len(day_rows)
-    total_cals = sum(r["total_calories"] for r in day_rows)
-    total_prot = sum(r["total_protein"] for r in day_rows)
-    hit_days = sum(1 for r in day_rows if r["total_protein"] >= protein_target)
+    total_cals = sum((r["total_calories"] or 0) for r in day_rows)
+    total_prot = sum((r["total_protein"] or 0) for r in day_rows)
+    hit_days = sum(1 for r in day_rows if (r["total_protein"] or 0) >= protein_target)
 
     return {
         "avg_calories": round(total_cals / total_days, 2),
@@ -176,12 +177,12 @@ def create():
     if len(username) > 30:
         flash("Username too long (max 30 characters)")
         return redirect(url_for("register"))
-    
+
 
     if password1 != password2:
         flash("Passwords don't match")
         return redirect(url_for("register"))
-    
+
     if len(password1) < 1 or len(password1) > 50:
         flash("Password must be between 1 and 50 characters long")
         return redirect(url_for("register"))
@@ -190,10 +191,10 @@ def create():
 
     try:
         users.create_user(username, password_hash)
-    except:
+    except Exception:
         flash("Username already taken")
         return redirect(url_for("register"))
-    
+
     flash("Account created successfully")
     return redirect(url_for("login"))
 
