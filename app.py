@@ -49,7 +49,7 @@ def update_protein():
     protein_target = request.form.get("protein_target", type=int)
 
     if protein_target is None or protein_target < 0 or protein_target > 1000000:
-        flash("Invalid protein target. Please enter a positive number.")
+        flash("Invalid protein target. Please enter a number between 0 and 1000000.")
         return redirect(url_for("index"))
 
     users.update_protein_target(session["user_id"], protein_target)
@@ -64,7 +64,7 @@ def update_calories():
     calorie_target = request.form.get("calorie_target", type=int)
 
     if calorie_target is None or calorie_target < 0 or calorie_target > 1000000:
-        flash("Invalid calorie target. Please enter a positive number.")
+        flash("Invalid calorie target. Please enter a number between 0 and 1000000.")
         return redirect(url_for("index"))
 
     users.update_calorie_target(session["user_id"], calorie_target)
@@ -176,13 +176,14 @@ def create():
     if len(username) > 30:
         flash("Username too long (max 30 characters)")
         return redirect(url_for("register"))
+    
 
     if password1 != password2:
         flash("Passwords don't match")
         return redirect(url_for("register"))
     
-    if len(password1) < 1:
-        flash("Password must be at least 1 characters long")
+    if len(password1) < 1 or len(password1) > 50:
+        flash("Password must be between 1 and 50 characters long")
         return redirect(url_for("register"))
 
     password_hash = generate_password_hash(password1)

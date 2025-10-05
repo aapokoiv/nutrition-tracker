@@ -121,6 +121,9 @@ def search_foods():
     page = int(request.args.get("page", 1))  # Get the current page number
     per_page = 10  # Number of items per page
 
+    if len(search_query) > 100:
+        flash("Input too long. Max 100 characters")
+        return redirect(url_for("foods.search_foods"))
     results = foods_repo.search_public_foods(search_query, page, per_page)
 
     # Get total number of foods for pagination
@@ -129,6 +132,50 @@ def search_foods():
     total_pages = (total_foods + per_page - 1) // per_page  # Calculate total pages
 
     return render_template("search.html", results=results, search_query=search_query, page=page, total_pages=total_pages)
+
+@foods_bp.route("/ingredients/add", methods=["POST"])
+@login_required
+def add_ingredient():
+    user_id = session["user_id"]
+    name = request.form.get("ingredient_name")
+    protein = float(request.form.get("ingredient_protein", 0) or 0)
+    calories = float(request.form.get("ingredient_calories", 0) or 0)
+
+    if not name or len(name) > 100 or protein > 10000 or calories > 1000000:
+        flash("Inputted values out of allowed range")
+        return redirect(url_for("foods.all_foods"))
+
+    foods_repo.add_ingredient(user_id, name, protein, calories)
+    flash(f"Ingredient '{name}' added.")
+    return redirect(url_for("foods.all_foods"))
+
+@foods_bp.route("/foods/add", methods=["POST"])
+@login_required
+def add_food():
+    user_id = session["user_id"]
+    ingredients = foods_repo.get_user_ingredients(user_id)
+    food_name = request.form.get("food_name")
+    food_class = request.form.get("food_class")
+    is_public = 1 if request.form.get("is_public") == "on" else 0
+
+    if not food_name or len(food_name) > 100:  
+        flash("Input a name with max 100 letters")
+        return redirect(url_for("foods.all_foods"))
+
+    food_id = foods_repo.add_food(user_id, food_name, food_class, is_public)
+
+    for ing in ingredients:
+        raw_qty = request.form.get(f"ingredient_{ing['id']}", "")
+        try:
+            qty = float(raw_qty) if raw_qty.strip() != "" else 0.0
+        except ValueError:
+            qty = 0.0
+        if qty > 0 and qty <= 10000:
+            foods_repo.add_food_ingredient(food_id, ing["id"], qty)
+
+    foods_repo.update_food_totals(food_id)
+    flash(f"Food '{food_name}' added.")
+    return redirect(url_for("foods.all_foods"))
 
 @foods_bp.route("/foods/<int:food_id>/delete", methods=["POST"])
 @login_required
@@ -151,12 +198,17 @@ def delete_ingredient(ingredient_id):
 @foods_bp.route("/ingredients/<int:ingredient_id>/edit", methods=["GET", "POST"])
 @login_required
 def edit_ingredient(ingredient_id):
-    check_csrf()
     user_id = session["user_id"]
     if request.method == "POST":
+        check_csrf()
         name = request.form.get("name")
         protein = float(request.form.get("protein", 0))
         calories = float(request.form.get("calories", 0))
+
+        if not name or len(name) > 100 or protein > 10000 or calories > 1000000:
+            flash("Inputted values out of allowed range")
+            return redirect(url_for("foods.all_foods"))
+
         foods_repo.update_ingredient(user_id, ingredient_id, name, protein, calories)
         flash("Ingredient updated.")
         return redirect(url_for("foods.all_foods"))
@@ -172,12 +224,16 @@ def edit_ingredient(ingredient_id):
 @foods_bp.route("/foods/<int:food_id>/edit", methods=["GET", "POST"])
 @login_required
 def edit_food(food_id):
-    check_csrf()
     user_id = session["user_id"]
 
     if request.method == "POST":
+        check_csrf()
         food_name = request.form.get("food_name")
         food_class = request.form.get("food_class")
+
+        if not food_name or len(food_name) > 100:  
+            flash("Input a name with max 100 letters")
+            return redirect(url_for("foods.all_foods"))
 
         # Update the food itself
         foods_repo.update_food(user_id, food_id, food_name, food_class)
@@ -194,7 +250,7 @@ def edit_food(food_id):
                 qty = float(raw_val) if raw_val.strip() != "" else 0
             except ValueError:
                 qty = 0
-            if qty > 0:
+            if qty > 0 and qty <= 10000:
                 foods_repo.add_food_ingredient(food_id, ing["id"], qty)
 
         # Update totals (protein & calories)

@@ -8,7 +8,7 @@
   <h1>Search Public Foods</h1>
   <form method="GET" action="{{ url_for('foods.search_foods') }}">
     <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-    <input type="text" name="search" placeholder="Search for foods..." value="{{ search_query }}">
+    <input type="text" name="search" placeholder="Search for foods..." value="{{ search_query }}" maxlength="100">
     <button type="submit">Search</button>
   </form>
 
