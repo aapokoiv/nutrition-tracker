@@ -3,13 +3,15 @@
 ## Application features
 
 * Creating an account and logging in
-* Adding ingredients
-* Making meals from ingredients and giving them a class
+* Adding ingredients and making meals from them
+* Giving Meals a class
 * Modifying and deleting foods and ingredients you have added
-* Searching foods and ingredients based on classes or properities
+* Searching foods and ingredients based on name, classes or properities
 * Searching what others have added and being able to like them
+* Being able to eat foods
 * Tracking your nutrition intake daily
 * Profile with statistics and history
+* Foods page with personal foods, ingredients and foods you have liked
 
 ## Installation
 
