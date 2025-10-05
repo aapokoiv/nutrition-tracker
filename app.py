@@ -183,8 +183,8 @@ def create():
         flash("Passwords don't match")
         return redirect(url_for("register"))
 
-    if len(password1) < 1 or len(password1) > 50:
-        flash("Password must be between 1 and 50 characters long")
+    if len(password1) < 6 or len(password1) > 50:
+        flash("Password must be between 6 and 50 characters long")
         return redirect(url_for("register"))
 
     password_hash = generate_password_hash(password1)
