@@ -17,6 +17,12 @@
 
   <form method="get" style="margin-bottom:1em;">
     <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+
+    <label>Search:</label>
+    <input type="text" name="search" value="{{ request.args.get('search', '') }}" placeholder="Search foods or ingredients">
+
+    &nbsp;&nbsp;
+
     <label>Ingredient sort:</label>
     <select name="ing_sort_by">
       <option value="name" {% if ing_sort_by=='name' %}selected{% endif %}>Name</option>
@@ -28,7 +34,7 @@
       <option value="desc" {% if ing_sort_dir=='desc' %}selected{% endif %}>↓</option>
     </select>
 
-    &nbsp; &nbsp;
+    &nbsp;&nbsp;
 
     <label>Food sort:</label>
     <select name="food_sort_by">
@@ -44,6 +50,7 @@
 
     <button type="submit">Apply</button>
   </form>
+
 
   <a href="{{ url_for('index') }}">Back</a>
 

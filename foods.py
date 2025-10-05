@@ -11,6 +11,8 @@ def all_foods():
     messages = get_flashed_messages()
     ingredients = foods_repo.get_user_ingredients(user_id)
 
+    search_query = request.args.get("search", "").strip().lower()
+
     ing_sort_by = request.args.get("ing_sort_by", "name")
     ing_sort_dir = request.args.get("ing_sort_dir", "asc")
     food_sort_by = request.args.get("food_sort_by", "name")
@@ -50,6 +52,22 @@ def all_foods():
         f["total_protein"] = round(total_prot, 2)
         f["total_calories"] = round(total_cal, 2)
         foods_list.append(f)
+
+    # --- 🔍 Search filter ---
+    if search_query:
+        ingredients = [i for i in ingredients if search_query in i["name"].lower()]
+        foods_list = [
+            f for f in foods_list
+            if search_query in f["name"].lower()
+            or search_query in f["class"].lower()
+            or any(search_query in ing["name"].lower() for ing in f["ingredients"])
+        ]
+        liked_foods = [
+            f for f in liked_foods
+            if search_query in f["name"].lower()
+            or search_query in f["class"].lower()
+            or any(search_query in ing["name"].lower() for ing in f["ingredients"])
+        ]
 
     # ---------- Sorting ----------
     # Ingredients
