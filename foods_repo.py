@@ -2,10 +2,18 @@ import db
 
 # ---------------- Ingredients ----------------
 def get_user_ingredients(user_id):
-    return db.query("SELECT * FROM Ingredients WHERE user_id = ?", [user_id])
+    # Only name, id, protein, calories are used in foods.py
+    return db.query(
+        "SELECT id, name, protein, calories FROM Ingredients WHERE user_id = ?",
+        [user_id]
+    )
 
 def get_ingredient(user_id, ingredient_id):
-    result = db.query("SELECT * FROM Ingredients WHERE id = ? AND user_id = ?", [ingredient_id, user_id])
+    # Only id, name, protein, calories used in edit_ingredient.html
+    result = db.query(
+        "SELECT id, name, protein, calories FROM Ingredients WHERE id = ? AND user_id = ?",
+        [ingredient_id, user_id]
+    )
     return result[0] if result else None
 
 def add_ingredient(user_id, name, protein, calories):
@@ -22,10 +30,11 @@ def update_ingredient(user_id, ingredient_id, name, protein, calories):
 
 def delete_ingredient(user_id, ingredient_id):
     sql = """DELETE FROM FoodIngredients WHERE ingredient_id = ? AND food_id IN (
-    SELECT id FROM Foods WHERE user_id = ?
+        SELECT id FROM Foods WHERE user_id = ?
     )"""
     db.execute(sql, [ingredient_id, user_id])
     db.execute("DELETE FROM Ingredients WHERE id = ? AND user_id = ?", [ingredient_id, user_id])
+
 
 # ---------------- Foods ----------------
 def add_food(user_id, name, category, is_public=1):
@@ -42,13 +51,17 @@ def update_food(user_id, food_id, name, category):
 
 def delete_food(user_id, food_id):
     db.execute("""
-    DELETE FROM FoodIngredients
-    WHERE food_id IN (SELECT id FROM Foods WHERE id = ? AND user_id = ?)
+        DELETE FROM FoodIngredients
+        WHERE food_id IN (SELECT id FROM Foods WHERE id = ? AND user_id = ?)
     """, [food_id, user_id])
     db.execute("DELETE FROM Foods WHERE id = ? AND user_id = ?", [food_id, user_id])
 
 def get_food(user_id, food_id):
-    result = db.query("SELECT * FROM Foods WHERE id = ? AND user_id = ?", [food_id, user_id])
+    # Used in edit_food() – needs id, name, class, user_id, totals
+    result = db.query(
+        "SELECT id, name, class, user_id, total_protein, total_calories FROM Foods WHERE id = ? AND user_id = ?",
+        [food_id, user_id]
+    )
     return result[0] if result else None
 
 def get_food_ingredients(food_id):
@@ -60,7 +73,10 @@ def get_food_ingredients(food_id):
     """, [food_id])
 
 def get_food_nutrients(food_id):
-    return db.query("SELECT id, total_protein, total_calories FROM Foods WHERE id = ?", [food_id])
+    return db.query(
+        "SELECT id, total_protein, total_calories FROM Foods WHERE id = ?",
+        [food_id]
+    )
 
 def add_food_ingredient(food_id, ingredient_id, quantity):
     db.execute(
@@ -74,22 +90,23 @@ def delete_food_ingredients(food_id):
 def search_public_foods(search_query, page=1, per_page=10):
     offset = (page - 1) * per_page
 
+    base_select = """
+        SELECT f.id, f.name, f.class, f.total_protein, f.total_calories, u.username
+        FROM Foods f
+        JOIN Users u ON f.user_id = u.id
+        WHERE f.is_public = 1
+    """
+
     if search_query:
-        food_rows = db.query("""
-            SELECT f.*, u.username
-            FROM Foods f
-            JOIN Users u ON f.user_id = u.id
-            WHERE f.is_public = 1 AND f.name LIKE ?
-            LIMIT ? OFFSET ?
-        """, [f"%{search_query}%", per_page, offset])
+        food_rows = db.query(
+            base_select + " AND f.name LIKE ? LIMIT ? OFFSET ?",
+            [f"%{search_query}%", per_page, offset]
+        )
     else:
-        food_rows = db.query("""
-            SELECT f.*, u.username
-            FROM Foods f
-            JOIN Users u ON f.user_id = u.id
-            WHERE f.is_public = 1
-            LIMIT ? OFFSET ?
-        """, [per_page, offset])
+        food_rows = db.query(
+            base_select + " LIMIT ? OFFSET ?",
+            [per_page, offset]
+        )
 
     results = []
     for food in food_rows:
@@ -123,18 +140,16 @@ def search_public_foods(search_query, page=1, per_page=10):
 def total_foods(search_query):
     if search_query:
         total = db.query("""
-            SELECT COUNT(*)
-            FROM Foods
+            SELECT COUNT(*) FROM Foods
             WHERE is_public = 1 AND name LIKE ?
-            """, [f"%{search_query}%"])[0][0]
+        """, [f"%{search_query}%"])[0][0]
     else:
         total = db.query("""
-        SELECT COUNT(*)
-        FROM Foods
-        WHERE is_public = 1
+            SELECT COUNT(*) FROM Foods
+            WHERE is_public = 1
         """)[0][0]
-    
     return total
+
 
 # ---------------- Likes ----------------
 def like_food(user_id, food_id):
@@ -144,19 +159,17 @@ def unlike_food(user_id, food_id):
     db.execute("DELETE FROM Likes WHERE user_id = ? AND food_id = ?", [user_id, food_id])
 
 def get_liked_foods(user_id):
-    # Get all liked foods
+    # Only the same fields as in search_public_foods are needed
     food_rows = db.query("""
-        SELECT f.*, u.username
+        SELECT f.id, f.name, f.class, f.total_protein, f.total_calories, u.username
         FROM Foods f
         JOIN Likes l ON f.id = l.food_id
         JOIN Users u ON f.user_id = u.id
         WHERE l.user_id = ?
     """, [user_id])
 
-    # Prepare a list to store liked foods with their ingredients
     liked_foods = []
     for food in food_rows:
-        # Create a new dictionary for the food
         food_dict = {
             'id': food['id'],
             'name': food['name'],
@@ -164,10 +177,9 @@ def get_liked_foods(user_id):
             'total_protein': food['total_protein'],
             'total_calories': food['total_calories'],
             'username': food['username'],
-            'ingredients': []  # Initialize an empty list for ingredients
+            'ingredients': []
         }
 
-        # Fetch ingredients for each food
         ingredients = db.query("""
             SELECT i.name, fi.quantity
             FROM FoodIngredients fi
@@ -175,7 +187,6 @@ def get_liked_foods(user_id):
             WHERE fi.food_id = ?
         """, [food['id']])
         
-        # Add ingredients to the food_dict
         for ing in ingredients:
             food_dict['ingredients'].append({
                 'name': ing['name'],
@@ -185,6 +196,7 @@ def get_liked_foods(user_id):
         liked_foods.append(food_dict)
 
     return liked_foods
+
 
 # ---------------- Eaten ----------------
 def record_eaten(user_id, food_id, quantity, protein, calories):
@@ -221,6 +233,7 @@ def get_user_daily_intake(user_id):
           AND date(e.time) = date('now', 'localtime')
     """, [user_id])[0]
 
+
 # ---------------- Update totals ----------------
 def update_food_totals(food_id):
     rows = db.query("""
@@ -231,14 +244,20 @@ def update_food_totals(food_id):
     """, [food_id])
     total_prot = sum(r["protein"] * r["qty"] for r in rows)
     total_cal = sum(r["calories"] * r["qty"] for r in rows)
-    db.execute("UPDATE Foods SET total_protein = ?, total_calories = ? WHERE id = ?", [round(total_prot,2), round(total_cal,2), food_id])
+    db.execute(
+        "UPDATE Foods SET total_protein = ?, total_calories = ? WHERE id = ?",
+        [round(total_prot, 2), round(total_cal, 2), food_id]
+    )
+
 
 # ---------------- Get all ----------------
 def get_all(user_id):
     return db.query("""
         SELECT f.id AS food_id, f.name AS food_name, f.class AS food_class,
-            COALESCE(i.name, '') AS ingredient_name, COALESCE(i.protein, 0) AS protein,
-            COALESCE(i.calories, 0) AS calories, COALESCE(fi.quantity, 0) AS quantity
+               COALESCE(i.name, '') AS ingredient_name,
+               COALESCE(i.protein, 0) AS protein,
+               COALESCE(i.calories, 0) AS calories,
+               COALESCE(fi.quantity, 0) AS quantity
         FROM Foods f
         LEFT JOIN FoodIngredients fi ON f.id = fi.food_id
         LEFT JOIN Ingredients i ON fi.ingredient_id = i.id
