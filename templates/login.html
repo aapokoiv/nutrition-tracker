@@ -1,21 +1,29 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Login</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  {% for m in messages %}
-    <p style="color: red;">{{ m }}</p>
-  {% endfor %}
+  <div class="container">
+    <h2>Login</h2>
 
-  <p>Please log in</p>
+    {% for m in messages %}
+      <p class="message error">{{ m }}</p>
+    {% endfor %}
 
-  <form action="{{ url_for('login') }}" method="post">
-    <p>Username: <input type="text" name="username" required></p>
-    <p>Password: <input type="password" name="password" required></p>
-    <input type="submit" value="Login">
-  </form>
+    <form action="{{ url_for('login') }}" method="post">
+      <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+      <label>Username:</label>
+      <input type="text" name="username" required>
+      <label>Password:</label>
+      <input type="password" name="password" required>
+      <button type="submit">Login</button>
+    </form>
 
-  <p>Don't have an account? <a href="{{ url_for('register') }}">Register</a></p>
+    <p>Don't have an account? <a href="{{ url_for('register') }}">Register</a></p>
+  </div>
 </body>
 </html>

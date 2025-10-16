@@ -3,59 +3,67 @@
 <head>
   <meta charset="UTF-8">
   <title>Search Public Foods</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <h1>Search Public Foods</h1>
-  <form method="GET" action="{{ url_for('foods.search_foods') }}">
-    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-    <input type="text" name="search" placeholder="Search for foods..." value="{{ search_query }}" maxlength="100">
-    <button type="submit">Search</button>
-  </form>
+  <div class="container">
 
-  {% for m in messages %}
-  <p style="color: green;">{{ m }}</p>
-  {% endfor %}
+    <h1>Search Public Foods</h1>
 
-  <br>
+    <form method="GET" action="{{ url_for('foods.search_foods') }}">
+      <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+      <input type="text" name="search" placeholder="Search for foods..." value="{{ search_query }}" maxlength="100">
+      <button type="submit">Search</button>
+    </form>
 
-  <a href="{{ url_for('index') }}">Back</a>
-
-  {% if results %}
-  <h2>Results:</h2>
-  <ul>
-    {% for food in results %}
-      <li>
-        <h3>{{ food.name }}</h3>
-        <p>Class: {{ food.class }}</p>
-        <p>Added by: {{ food.username }}</p>
-        <p>Ingredients:</p>
-        <ul>
-          {% for ing in food.ingredients %}
-            <li>{{ ing.quantity }} x {{ ing.name }}</li>
-          {% endfor %}
-        </ul>
-        <p>Total Protein: {{ food.total_protein }}</p>
-        <p>Total Calories: {{ food.total_calories }}</p>
-          <form action="{{ url_for('foods.like_food', food_id=food.id) }}" method="POST">
-            <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-            <button type="submit">Like</button>
-          </form>
-      </li>
+    {% for m in messages %}
+      <p class="message success">{{ m }}</p>
     {% endfor %}
-  </ul>
-  {% else %}
-    <p>No results found for your search.</p>
-  {% endif %}
 
-  <div>
+    <div class="navbar mt-2">
+      <a href="{{ url_for('index') }}">Back</a>
+    </div>
+
+    {% if results %}
+      <h2>Results</h2>
+      <ul>
+        {% for food in results %}
+          <li>
+            <h3>{{ food.name }}</h3>
+            <p><strong>Class:</strong> {{ food.class }}</p>
+            <p><strong>Added by:</strong> {{ food.username }}</p>
+
+            <p><strong>Ingredients:</strong></p>
+            <ul>
+              {% for ing in food.ingredients %}
+                <li>{{ ing.quantity }} × {{ ing.name }}</li>
+              {% endfor %}
+            </ul>
+
+            <p><strong>Total Protein:</strong> {{ food.total_protein }}</p>
+            <p><strong>Total Calories:</strong> {{ food.total_calories }}</p>
+
+            <form action="{{ url_for('foods.like_food', food_id=food.id) }}" method="POST" class="mt-1">
+              <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+              <button type="submit">Like</button>
+            </form>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No results found for your search.</p>
+    {% endif %}
+
+    <div class="pagination mt-2">
       {% if page > 1 %}
-          <a href="{{ url_for('foods.search_foods', search=search_query, page=page-1) }}">Previous</a>
+        <a href="{{ url_for('foods.search_foods', search=search_query, page=page-1) }}">Previous</a>
       {% endif %}
       <span>Page {{ page }} of {{ total_pages }}</span>
       {% if page < total_pages %}
-          <a href="{{ url_for('foods.search_foods', search=search_query, page=page+1) }}">Next</a>
+        <a href="{{ url_for('foods.search_foods', search=search_query, page=page+1) }}">Next</a>
       {% endif %}
-  </div>
+    </div>
 
+  </div>
 </body>
 </html>

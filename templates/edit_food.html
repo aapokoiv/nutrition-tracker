@@ -1,23 +1,44 @@
-<h2>Edit Food</h2>
-<form method="post">
-  <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-  <label for="food_name">Food Name:</label>
-  <input type="text" name="food_name" value="{{ food.name }}" maxlength="100" required><br>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Edit Food</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
 
-  <label for="food_class">Meal Class:</label>
-  <select name="food_class" required>
-    <option value="Breakfast/Supper" {% if food.class == 'Breakfast/Supper' %}selected{% endif %}>Breakfast/Supper</option>
-    <option value="Lunch/Dinner" {% if food.class == 'Lunch/Dinner' %}selected{% endif %}>Lunch/Dinner</option>
-    <option value="Snack" {% if food.class == 'Snack' %}selected{% endif %}>Snack</option>
-    <option value="Drink" {% if food.class == 'Drink' %}selected{% endif %}>Drink</option>
-  </select><br><br>
+    <h2>Edit Food</h2>
 
-  <label>Ingredients (set quantity ≥1 to include):</label><br>
-  {% for ing in user_ingredients %}
-    <input type="number" step="0.01" name="ingredient_{{ ing.id }}" min="0" max="10000"
-           value="{{ food_ingredients.get(ing.id, 0) }}">
-    {{ ing.name }} (Protein: {{ ing.protein }}, Calories: {{ ing.calories }})<br>
-  {% endfor %}
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
 
-  <button type="submit">Update Food</button>
-</form>
+      <label for="food_name">Food Name:</label>
+      <input type="text" id="food_name" name="food_name" value="{{ food.name }}" maxlength="100" required>
+
+      <label for="food_class">Meal Class:</label>
+      <select id="food_class" name="food_class" required>
+        <option value="Breakfast/Supper" {% if food.class == 'Breakfast/Supper' %}selected{% endif %}>Breakfast/Supper</option>
+        <option value="Lunch/Dinner" {% if food.class == 'Lunch/Dinner' %}selected{% endif %}>Lunch/Dinner</option>
+        <option value="Snack" {% if food.class == 'Snack' %}selected{% endif %}>Snack</option>
+        <option value="Drink" {% if food.class == 'Drink' %}selected{% endif %}>Drink</option>
+      </select>
+
+      <h4 class="mt-2">Ingredients (set quantity ≥ 1 to include):</h4>
+
+      <div class="mt-1">
+        {% for ing in user_ingredients %}
+          <label>
+            <input type="number" step="0.01" name="ingredient_{{ ing.id }}" min="0" max="10000"
+                   value="{{ food_ingredients.get(ing.id, 0) }}">
+            {{ ing.name }} (Protein: {{ ing.protein }}, Calories: {{ ing.calories }})
+          </label>
+        {% endfor %}
+      </div>
+
+      <button type="submit" class="mt-2">Update Food</button>
+    </form>
+
+  </div>
+</body>
+</html>

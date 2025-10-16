@@ -3,109 +3,109 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home</title>
+  <title>Profile</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+  <div class="container">
 
-  {% set protein_values = summary7 | map(attribute='total_protein') | list %}
-  {% set max_protein = (protein_values | max) if protein_values else 0 %}
-  {% set avg_protein = (protein_values | sum / protein_values|length) if protein_values else 0 %}
+    {% set protein_values = summary7 | map(attribute='total_protein') | list %}
+    {% set max_protein = (protein_values | max) if protein_values else 0 %}
+    {% set avg_protein = (protein_values | sum / protein_values|length) if protein_values else 0 %}
 
-  {% set calorie_values = summary7 | map(attribute='total_calories') | list %}
-  {% set max_cal = (calorie_values | max) if calorie_values else 0 %}
-  {% set avg_cal = (calorie_values | sum / calorie_values|length) if calorie_values else 0 %}
+    {% set calorie_values = summary7 | map(attribute='total_calories') | list %}
+    {% set max_cal = (calorie_values | max) if calorie_values else 0 %}
+    {% set avg_cal = (calorie_values | sum / calorie_values|length) if calorie_values else 0 %}
 
+    <h2>{{ user.username }}'s Profile</h2>
 
-  <h2>{{ user.username }}'s Profile</h2>
+    <div>
+      <img class="profile-pic" src="{{ url_for('show_profile_pic', user_id=user.id) }}" alt="{{ user.username }}'s profile picture"/>
+    </div>
 
-  <div>
-    <img src="{{ url_for('show_profile_pic', user_id=user.id) }}" alt="{{ user.username }}'s profile picture"/>
-  </div>
+    <div class="navbar">
+      <a href="{{ url_for('index') }}">Back</a>
+    </div>
 
-  <a href="{{ url_for('index') }}">Back</a>
+    <hr>
 
-  <hr>
-
-  <h3>Update Profile Picture</h3>
-  <p>Upload jpg-file, Max size 100 KB</p>
-  <form method="post" enctype="multipart/form-data">
-    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-    <input type="file" name="profile_picture" accept="image/*" required>
-    <button type="submit">Upload</button>
-  </form>
+    <h3>Update Profile Picture</h3>
+    <p>Upload jpg-file, Max size 100 KB</p>
+    <form method="post" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+      <input type="file" name="profile_picture" accept="image/*" required>
+      <button type="submit">Upload</button>
+    </form>
 
     {% for m in messages %}
-    <p style="color: red;">{{ m }}</p>
+      <p class="message error">{{ m }}</p>
     {% endfor %}
 
-  <hr>
+    <hr>
 
-  <h3>30-Day Nutrition Statistics</h3>
-  <ul>
-    <li><strong>Average Protein (per day):</strong> {{ summary30.avg_protein }} g, target = {{ user.protein_target }} g/day</li>
-    <li>
-      <strong>Average Calories (per day):</strong> {{ summary30.avg_calories }} kcal 
-      target = {{ user.calorie_target }} kcal/day
-      over/under from target = {{ summary30.avg_calories - user.calorie_target }}
-    </li>
-    <li><strong>Protein Target Hit:</strong> {{ summary30.hit_days }}/{{ summary30.total_days }} days</li>
-  </ul>
+    <h3>30-Day Nutrition Statistics</h3>
+    <ul>
+      <li><strong>Average Protein (per day):</strong> {{ summary30.avg_protein }} g, target = {{ user.protein_target }} g/day</li>
+      <li>
+        <strong>Average Calories (per day):</strong> {{ summary30.avg_calories }} kcal 
+        target = {{ user.calorie_target }} kcal/day
+        over/under from target = {{ summary30.avg_calories - user.calorie_target }}
+      </li>
+      <li><strong>Protein Target Hit:</strong> {{ summary30.hit_days }}/{{ summary30.total_days }} days</li>
+    </ul>
 
-  {% if summary30.total_days == 0 %}
-  <p>No eating data recorded yet. Start by eating some foods!</p>
-  {% endif %}
+    {% if summary30.total_days == 0 %}
+      <p>No eating data recorded yet. Start by eating some foods!</p>
+    {% endif %}
 
-  <h3>Calories (last 7 days)</h3>
-  <svg width="450" height="200" style="background:#f9f9f9; border:1px solid #ccc;">
-    {% set max_val = [max_cal, user.calorie_target, avg_cal] | max %}
-    {% set start_x = 20 %}
-    {% set step = 50 %}
+    <h3>Calories (last 7 days)</h3>
+    <svg class="chart-container" width="450" height="200" role="img" aria-label="Calories last 7 days">
+      {% set max_val = [max_cal, user.calorie_target, avg_cal] | max %}
+      {% set start_x = 20 %}
+      {% set step = 50 %}
 
-    {% for row in summary7 %}
-      {% set x = start_x + loop.index0 * step %}
-      {% set y = 180 - (row.total_calories / max_val * 150) %}
-      {% if loop.index0 > 0 %}
-        {% set prev_x = start_x + (loop.index0 - 1) * step %}
-        {% set prev_row = summary7[loop.index0 - 1] %}
-        {% set prev_y = 180 - (prev_row.total_calories / max_val * 150) %}
-        <line x1="{{ prev_x }}" y1="{{ prev_y }}" x2="{{ x }}" y2="{{ y }}" stroke="green" stroke-width="2"/>
-      {% endif %}
-      <circle cx="{{ x }}" cy="{{ y }}" r="3" fill="green"/>
-      <text x="{{ x }}" y="192" text-anchor="middle" font-size="10">{{ row.total_calories }}kcal</text>
-      <text x="{{ x }}" y="200" text-anchor="middle" font-size="10">{{ row.day[5:] }}</text>
-    {% endfor %}
+      {% for row in summary7 %}
+        {% set x = start_x + loop.index0 * step %}
+        {% set y = 180 - (row.total_calories / max_val * 150) %}
+        {% if loop.index0 > 0 %}
+          {% set prev_x = start_x + (loop.index0 - 1) * step %}
+          {% set prev_row = summary7[loop.index0 - 1] %}
+          {% set prev_y = 180 - (prev_row.total_calories / max_val * 150) %}
+          <line x1="{{ prev_x }}" y1="{{ prev_y }}" x2="{{ x }}" y2="{{ y }}" stroke="green" stroke-width="2"/>
+        {% endif %}
+        <circle cx="{{ x }}" cy="{{ y }}" r="3" fill="green"/>
+        <text x="{{ x }}" y="189" text-anchor="middle" font-size="10">{{ row.total_calories }}kcal</text>
+        <text x="{{ x }}" y="198" text-anchor="middle" font-size="10">{{ row.day[5:] }}</text>
+      {% endfor %}
 
-    {% set avg_y = 180 - (avg_cal / max_val * 150) %}
-    {% set target_y = 180 - (user.calorie_target / max_val * 150) %}
-    <line x1="10" y1="{{ avg_y }}" x2="390" y2="{{ avg_y }}" stroke="orange" stroke-dasharray="4,2"/>
-    <text x="395" y="{{ avg_y + 4 }}" font-size="10" fill="orange">Avg {{ avg_cal|round(1) }}</text>
+      {% set avg_y = 180 - (avg_cal / max_val * 150) %}
+      {% set target_y = 180 - (user.calorie_target / max_val * 150) %}
+      <line x1="10" y1="{{ avg_y }}" x2="385" y2="{{ avg_y }}" stroke="orange" stroke-dasharray="4,2"/>
+      <text x="388" y="{{ avg_y + 4 }}" font-size="10" fill="orange">Avg {{ avg_cal|round(1) }}</text>
 
-    <line x1="10" y1="{{ target_y }}" x2="390" y2="{{ target_y }}" stroke="red" stroke-dasharray="4,2"/>
-    <text x="395" y="{{ target_y + 4 }}" font-size="10" fill="red">Target {{ user.calorie_target }}</text>
-  </svg>
+      <line x1="10" y1="{{ target_y }}" x2="385" y2="{{ target_y }}" stroke="red" stroke-dasharray="4,2"/>
+      <text x="388" y="{{ target_y + 4 }}" font-size="10" fill="red">Target {{ user.calorie_target }}</text>
+    </svg>
 
-  <h3>Protein (last 7 days)</h3>
-  <svg width="450" height="200" style="background:#f9f9f9; border:1px solid #ccc;">
-    {% set start_x = 20 %}
-    {% set step = 50 %}
-    {% set max_protein_val = [max_protein, user.protein_target] | max %}
+    <h3>Protein (last 7 days)</h3>
+    <svg class="chart-container" width="450" height="200" role="img" aria-label="Protein last 7 days">
+      {% set start_x = 20 %}
+      {% set step = 50 %}
+      {% set max_protein_val = [max_protein, user.protein_target] | max %}
 
-    {% for row in summary7 %}
-      {% set x = start_x + loop.index0 * step %}
-      {% set bar_height = (row.total_protein / max_protein_val * 150) if max_protein_val > 0 else 0 %}
-      <rect x="{{ x }}" y="{{ 180 - bar_height }}" width="40" height="{{ bar_height }}" fill="steelblue"/>
-      <text x="{{ x + 20 }}" y="192" text-anchor="middle" font-size="10">{{ row.total_protein }}g</text>
-      <text x="{{ x + 20 }}" y="200" text-anchor="middle" font-size="10">{{ row.day[5:] }}</text>
-    {% endfor %}
+      {% for row in summary7 %}
+        {% set x = start_x + loop.index0 * step %}
+        {% set bar_height = (row.total_protein / max_protein_val * 150) if max_protein_val > 0 else 0 %}
+        <rect x="{{ x }}" y="{{ 180 - bar_height }}" width="40" height="{{ bar_height }}" fill="steelblue"/>
+        <text x="{{ x + 20 }}" y="189" text-anchor="middle" font-size="10">{{ row.total_protein }}g</text>
+        <text x="{{ x + 20 }}" y="198" text-anchor="middle" font-size="10">{{ row.day[5:] }}</text>
+      {% endfor %}
 
-    {% set target_y = 180 - (user.protein_target / max_protein_val * 150) %}
-    <line x1="10" y1="{{ target_y }}" x2="390" y2="{{ target_y }}" stroke="red" stroke-dasharray="4,2"/>
-    <text x="395" y="{{ target_y + 4 }}" font-size="10" fill="red">Target {{ user.protein_target }}</text>
-  </svg>
+      {% set target_y = 180 - (user.protein_target / max_protein_val * 150) %}
+      <line x1="10" y1="{{ target_y }}" x2="387" y2="{{ target_y }}" stroke="red" stroke-dasharray="4,2"/>
+      <text x="388" y="{{ target_y + 4 }}" font-size="10" fill="red">Target {{ user.protein_target }}</text>
+    </svg>
 
-  <br>
-
-  
-
+  </div>
 </body>
 </html>

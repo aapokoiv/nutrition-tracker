@@ -1,35 +1,31 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-  <title>Registeration</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-
 <body>
+  <div class="container">
+    <h2>Create Account</h2>
 
-  {% for m in messages %}
-    <p style="color: red;">{{ m }}</p>
-  {% endfor %}
+    {% for m in messages %}
+      <p class="message error">{{ m }}</p>
+    {% endfor %}
 
-  <form action="/create" method="post">
-    <p>
-      Username: <br />
-      <input type="text" name="username" maxlength="30" required>
-    </p>
-    <p>
-      Password: <br />
-      <input type="password" name="password1" minlength="6" maxlength="50" required>
-    </p>
-    <p>
-      Password again: <br />
-      <input type="password" name="password2" minlength="6" maxlength="50" required>
-    </p>
-    <input type="submit" value="Create user" />
-  </form>
+    <form action="{{ url_for('register') }}" method="post">
+      <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+      <label>Username:</label>
+      <input type="text" name="username" required>
+      <label>Password:</label>
+      <input type="password" name="password" required>
+      <label>Confirm Password:</label>
+      <input type="password" name="confirm_password" required>
+      <button type="submit">Register</button>
+    </form>
+
+    <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a>.</p>
+  </div>
 </body>
-
-<br>
-
-<a href="/login">Log In</a>
-
 </html>
