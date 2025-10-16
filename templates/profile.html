@@ -9,6 +9,14 @@
 <body>
   <div class="container">
 
+  <div class="navbar">
+    <a href="{{ url_for('index') }}" class="btn-link">Homepage</a>
+    <a href="{{ url_for('foods.all_foods') }}" class="btn-link">Foods & Ingredients</a>
+    <a href="{{ url_for('profile') }}" class="btn-link">Profile</a>
+    <a href="{{ url_for('foods.search_foods') }}" class="btn-link">Community Foods</a>
+    <a href="{{ url_for('logout') }}" class="btn-link">Logout</a>
+  </div>
+
     {% set protein_values = summary7 | map(attribute='total_protein') | list %}
     {% set max_protein = (protein_values | max) if protein_values else 0 %}
     {% set avg_protein = (protein_values | sum / protein_values|length) if protein_values else 0 %}
@@ -23,22 +31,18 @@
       <img class="profile-pic" src="{{ url_for('show_profile_pic', user_id=user.id) }}" alt="{{ user.username }}'s profile picture"/>
     </div>
 
-    <div class="navbar">
-      <a href="{{ url_for('index') }}">Back</a>
-    </div>
-
     <hr>
 
     <h3>Update Profile Picture</h3>
-    <p>Upload jpg-file, Max size 100 KB</p>
+    <p>Upload a jpg-file, Max size 100 KB</p>
     <form method="post" enctype="multipart/form-data">
       <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-      <input type="file" name="profile_picture" accept="image/*" required>
+      <input type="file" name="profile_picture" accept="image/*" required class="med">
       <button type="submit">Upload</button>
     </form>
 
     {% for m in messages %}
-      <p class="message error">{{ m }}</p>
+      <p class="message">{{ m }}</p>
     {% endfor %}
 
     <hr>

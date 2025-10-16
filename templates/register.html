@@ -11,17 +11,17 @@
     <h2>Create Account</h2>
 
     {% for m in messages %}
-      <p class="message error">{{ m }}</p>
+      <p class="message">{{ m }}</p>
     {% endfor %}
 
-    <form action="{{ url_for('register') }}" method="post">
+    <form action="{{ url_for('create') }}" method="post">
       <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
       <label>Username:</label>
       <input type="text" name="username" required>
       <label>Password:</label>
-      <input type="password" name="password" required>
+      <input type="password" name="password1" required>
       <label>Confirm Password:</label>
-      <input type="password" name="confirm_password" required>
+      <input type="password" name="password2" required>
       <button type="submit">Register</button>
     </form>
 

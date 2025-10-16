@@ -16,7 +16,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2rem;
+  padding: 1rem;
 }
 
 /* ===== Container ===== */
@@ -26,7 +26,6 @@ body {
   border-radius: 10px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   width: 90%;
-  max-width: 900px;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -48,16 +47,8 @@ h1, h2 {
   border-radius: 5px;
   font-weight: bold;
   text-align: center;
-}
-
-.message.error {
   background-color: #ffe5e5;
   color: #c0392b;
-}
-
-.message.success {
-  background-color: #e9f9e9;
-  color: #2e7d32;
 }
 
 /* ===== Forms ===== */
@@ -77,11 +68,26 @@ input[type="number"],
 input[type="password"],
 input[type="file"],
 select {
-  padding: 0.5rem;
+  padding: 0.2rem;
   border: 1px solid #ccc;
   border-radius: 6px;
-  width: 100%;
   font-size: 1rem;
+}
+
+.mini {
+  width: 10%;
+}
+
+.med {
+  width: 30%;
+}
+
+.big {
+  width: 60%;
+}
+
+.row {
+  flex-direction: row;
 }
 
 button,
@@ -89,15 +95,31 @@ input[type="submit"] {
   background-color: #e0e0e0;
   border: 1px solid #ccc;
   border-radius: 6px;
-  padding: 0.5rem 1rem;
+  padding: 0.3rem;
   cursor: pointer;
   transition: background 0.2s ease;
   align-self: flex-start;
 }
 
 button:hover,
-input[type="submit"]:hover {
+input[type="submit"]:hover,
+a.btn-link:hover {
   background-color: #d6d6d6;
+  text-decoration: none;
+}
+
+/* ===== Button-style links ===== */
+a.btn-link {
+  display: inline-block;
+  background-color: #e0e0e0;   /* same as other buttons */
+  color: black;
+  padding: 0.3rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 /* ===== Links ===== */
@@ -121,7 +143,7 @@ table {
 }
 
 th, td {
-  padding: 0.75rem;
+  padding: 0.2rem;
   text-align: left;
   border-bottom: 1px solid #ddd;
 }
@@ -133,6 +155,14 @@ th {
 
 tr:hover {
   background-color: #f9f9f9;
+}
+
+/* ===== Foods table adjustments ===== */
+.foods-table tr th:nth-child(4),
+.foods-table tr td:nth-child(4) {
+  width: 35%;               /* give Ingredients more horizontal room */
+  white-space: normal;
+  word-break: break-word;
 }
 
 /* ===== Lists ===== */
@@ -191,3 +221,40 @@ li {
 .mb-1 { margin-bottom: 0.5rem; }
 .mb-2 { margin-bottom: 1rem; }
 .mb-3 { margin-bottom: 1.5rem; }
+
+/* Sorting form all in one row */
+form.sorting-form {
+  display: flex;
+  flex-wrap: nowrap;       /* everything stays in one row */
+  align-items: center;     /* vertically center all items */
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  flex-direction: row;
+}
+
+/* Labels and their controls inline */
+form.sorting-form label {
+  margin-right: 0.25rem;
+  white-space: nowrap;     /* prevent label from breaking */
+}
+
+/* Inputs/selects smaller to fit */
+form.sorting-form input,
+form.sorting-form select {
+  font-size: 0.85rem;
+  padding: 0.25rem 0.3rem;
+}
+
+/* Apply button vertically centered */
+form.sorting-form button {
+  align-self: center;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+/* Reset link style */
+form.sorting-form a {
+  font-size: 0.85rem;
+  align-self: center;
+  margin-left: 0.25rem;
+}

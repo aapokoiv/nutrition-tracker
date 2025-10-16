@@ -2,13 +2,21 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Search Public Foods</title>
+  <title>Community Foods</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <div class="container">
 
-    <h1>Search Public Foods</h1>
+  <div class="navbar">
+    <a href="{{ url_for('index') }}" class="btn-link">Homepage</a>
+    <a href="{{ url_for('foods.all_foods') }}" class="btn-link">Foods & Ingredients</a>
+    <a href="{{ url_for('profile') }}" class="btn-link">Profile</a>
+    <a href="{{ url_for('foods.search_foods') }}" class="btn-link">Community Foods</a>
+    <a href="{{ url_for('logout') }}" class="btn-link">Logout</a>
+  </div>
+
+    <h1>Community Foods</h1>
 
     <form method="GET" action="{{ url_for('foods.search_foods') }}">
       <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
@@ -17,12 +25,8 @@
     </form>
 
     {% for m in messages %}
-      <p class="message success">{{ m }}</p>
+      <p class="message">{{ m }}</p>
     {% endfor %}
-
-    <div class="navbar mt-2">
-      <a href="{{ url_for('index') }}">Back</a>
-    </div>
 
     {% if results %}
       <h2>Results</h2>
@@ -40,8 +44,8 @@
               {% endfor %}
             </ul>
 
-            <p><strong>Total Protein:</strong> {{ food.total_protein }}</p>
-            <p><strong>Total Calories:</strong> {{ food.total_calories }}</p>
+            <p><strong>Total Protein:</strong> {{ food.total_protein }} g</p>
+            <p><strong>Total Calories:</strong> {{ food.total_calories }} kcal</p>
 
             <form action="{{ url_for('foods.like_food', food_id=food.id) }}" method="POST" class="mt-1">
               <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">

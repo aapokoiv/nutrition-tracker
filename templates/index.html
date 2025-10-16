@@ -9,8 +9,16 @@
 <body>
   <div class="container">
 
+    <div class="navbar">
+      <a href="{{ url_for('index') }}" class="btn-link">Homepage</a>
+      <a href="{{ url_for('foods.all_foods') }}" class="btn-link">Foods & Ingredients</a>
+      <a href="{{ url_for('profile') }}" class="btn-link">Profile</a>
+      <a href="{{ url_for('foods.search_foods') }}" class="btn-link">Community Foods</a>
+      <a href="{{ url_for('logout') }}" class="btn-link">Logout</a>
+    </div>
+
     {% for m in messages %}
-      <p class="message error">{{ m }}</p>
+      <p class="message">{{ m }}</p>
     {% endfor %}
 
     <h3>Your nutrition intake for today</h3>
@@ -18,7 +26,7 @@
     <h5>Protein</h5>
     <p>Target: {{ pt }} g</p>
     <p>Current intake: {{ pi or 0 }} g</p>
-    <form action="{{ url_for('update_protein') }}" method="post">
+    <form action="{{ url_for('update_protein') }}" method="post" class="row">
       <label for="protein_target">Update protein target:</label>
       <input type="number" name="protein_target" id="protein_target" min="1" max="1000000" required>
       <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
@@ -27,8 +35,8 @@
 
     <h5>Calories</h5>
     <p>Target: {{ ct }} kcal</p>
-    <p>Current intake: {{ ci or 0}} kcal</p>
-    <form action="{{ url_for('update_calories') }}" method="post">
+    <p>Current intake: {{ ci or 0 }} kcal</p>
+    <form action="{{ url_for('update_calories') }}" method="post" class="row">
       <label for="calorie_target">Update calorie target:</label>
       <input type="number" name="calorie_target" id="calorie_target" min="1" max="1000000" required>
       <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
@@ -42,7 +50,7 @@
           <li>
             <strong>{{ food.food_name }}</strong> — {{ food.eaten_calories }} kcal, {{ food.eaten_protein }} g protein
             <small>at {{ food.eaten_time }}</small>
-            <form action="{{ url_for('foods.uneat_food', eaten_id=food.eaten_id) }}" method="post" class="inline-form">
+            <form action="{{ url_for('foods.uneat_food', eaten_id=food.eaten_id) }}" method="post">
               <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
               <button type="submit">Un-eat</button>
             </form>
@@ -53,15 +61,7 @@
       <p>No foods eaten yet today.</p>
     {% endif %}
 
-    <div class="navbar">
-      <a href="{{ url_for('foods.all_foods') }}">Foods</a>
-      <a href="{{ url_for('profile') }}">Profile</a>
-      <a href="{{ url_for('foods.search_foods') }}">Search Public Foods</a>
-      <a href="{{ url_for('logout') }}">Logout</a>
-    </div>
-
     <p>Logged in as {{ user }}</p>
-
   </div>
 </body>
 </html>
