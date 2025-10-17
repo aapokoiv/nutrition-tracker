@@ -59,7 +59,8 @@ def delete_food(user_id, food_id):
 def get_food(user_id, food_id):
     # Used in edit_food() – needs id, name, class, user_id, totals
     result = db.query(
-        "SELECT id, name, class, user_id, total_protein, total_calories FROM Foods WHERE id = ? AND user_id = ?",
+        """SELECT id, name, class, user_id, total_protein, total_calories 
+        FROM Foods WHERE id = ? AND user_id = ?""",
         [food_id, user_id]
     )
     return result[0] if result else None
@@ -126,7 +127,7 @@ def search_public_foods(search_query, page=1, per_page=10):
             JOIN Ingredients i ON fi.ingredient_id = i.id
             WHERE fi.food_id = ?
         """, [food['id']])
-        
+
         for ing in ingredients:
             food_dict['ingredients'].append({
                 'name': ing['name'],
@@ -186,7 +187,7 @@ def get_liked_foods(user_id):
             JOIN Ingredients i ON fi.ingredient_id = i.id
             WHERE fi.food_id = ?
         """, [food['id']])
-        
+
         for ing in ingredients:
             food_dict['ingredients'].append({
                 'name': ing['name'],

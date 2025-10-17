@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, get_flashed_messages, session
+from flask import Blueprint, render_template, request, session
+from flask import redirect, url_for, flash, get_flashed_messages
 import foods_repo
 from auth import login_required, check_csrf
 
@@ -73,7 +74,7 @@ def all_foods():
     # Ingredients
     if ing_sort_by not in allowed_ing_sorts:
         ing_sort_by = "name"
-    ing_reverse = (ing_sort_dir == "desc")
+    ing_reverse = ing_sort_dir == "desc"
     if ing_sort_by == "name":
         ingredients = sorted(ingredients, key=lambda x: x["name"].lower(), reverse=ing_reverse)
     else:
@@ -82,7 +83,7 @@ def all_foods():
     # Foods
     if food_sort_by not in allowed_food_sorts:
         food_sort_by = "name"
-    food_reverse = (food_sort_dir == "desc")
+    food_reverse = food_sort_dir == "desc"
     if food_sort_by in ("name", "class"):
         foods_list = sorted(foods_list, key=lambda x: x[food_sort_by].lower(), reverse=food_reverse)
     else:

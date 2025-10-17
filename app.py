@@ -3,12 +3,14 @@ import secrets
 from flask import Flask, render_template, session, request
 from flask import redirect, flash, get_flashed_messages, url_for, Response
 from werkzeug.security import generate_password_hash, check_password_hash
-import config, users, foods_repo
+import config
+import users
+import foods_repo
 from foods import foods_bp
 from auth import login_required, check_csrf
 
 app = Flask(__name__)
-app.secret_key = config.secret_key
+app.secret_key = config.SECRET_KEY
 app.register_blueprint(foods_bp)
 
 

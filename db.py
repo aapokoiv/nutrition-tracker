@@ -24,8 +24,8 @@ def execute(sql, params=None):
     return last_id
 
 def last_insert_id():
-    return getattr(g, "last_insert_id", None) 
-    
+    return getattr(g, "last_insert_id", None)
+
 def query(sql, params=None):
     if params is None:
         params = []
