@@ -314,12 +314,12 @@ def uneat_food(eaten_id):
 def like_food(food_id):
     check_csrf()
     user_id = session["user_id"]
-    # insert ignore style: try/except on unique constraint
-    try:
-        foods_repo.like_food(user_id, food_id)
+
+    result = foods_repo.like_food(user_id, food_id)
+
+    if result is not None:
         flash("Liked.")
-    except Exception:
-        pass
+
     return redirect(url_for("foods.search_foods"))
 
 @foods_bp.route("/foods/<int:food_id>/unlike", methods=["POST"])

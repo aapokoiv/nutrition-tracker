@@ -191,9 +191,11 @@ def register():
 
     password_hash = generate_password_hash(password1)
 
-    try:
-        users.create_user(username, password_hash)
-    except Exception:
+    # Create the user — db.py now handles all DB errors
+    result = users.create_user(username, password_hash)
+
+    if result is None:
+        # Creation failed (likely due to unique constraint)
         flash("Username already taken")
         return render_template("register.html", messages=get_flashed_messages(), filled=filled)
 
@@ -226,5 +228,4 @@ def login():
 @login_required
 def logout():
     session.pop("user_id", None)
-    flash("Logged out")
     return redirect(url_for("login"))
