@@ -104,27 +104,30 @@ def all_foods():
 @foods_bp.route("/search", methods=["GET"])
 @login_required
 def search_foods():
-    messages = get_flashed_messages()
     search_query = request.args.get("search", "")
-    page = int(request.args.get("page", 1))  # Get the current page number
-    per_page = 10  # Number of items per page
+    page = request.args.get("page", 1, type=int)
+    per_page = 10
 
-    if len(search_query) > 100:
-        flash("Input too long. Max 100 characters")
-        return redirect(url_for("foods.search_foods"))
     results = foods_repo.search_public_foods(search_query, page, per_page)
+    total = foods_repo.total_foods(search_query)
+    total_pages = (total + per_page - 1) // per_page
 
-    # Get total number of foods for pagination
-    total_foods = foods_repo.total_foods(search_query)
+    # Get liked foods of current user
+    user_id = session["user_id"]
+    liked_foods = foods_repo.get_liked_foods(user_id)
+    liked_food_ids = {food['id'] for food in liked_foods}  # set of IDs for fast lookup
 
-    total_pages = (total_foods + per_page - 1) // per_page  # Calculate total pages
+    messages = get_flashed_messages()
 
-    return render_template("search.html",
-                           messages=messages,
-                           results=results,
-                           search_query=search_query,
-                           page=page,
-                           total_pages=total_pages)
+    return render_template(
+        "search.html",
+        results=results,
+        liked_food_ids=liked_food_ids,
+        search_query=search_query,
+        page=page,
+        total_pages=total_pages,
+        messages=messages
+    )
 
 @foods_bp.route("/ingredients/add", methods=["POST"])
 @login_required

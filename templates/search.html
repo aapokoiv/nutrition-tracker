@@ -47,10 +47,18 @@
             <p><strong>Total Protein:</strong> {{ food.total_protein }} g</p>
             <p><strong>Total Calories:</strong> {{ food.total_calories }} kcal</p>
 
-            <form action="{{ url_for('foods.like_food', food_id=food.id) }}" method="POST" class="mt-1">
-              <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-              <button type="submit">Like</button>
-            </form>
+            {% if food.id in liked_food_ids %}
+              <form action="{{ url_for('foods.unlike_food', food_id=food.id) }}" method="POST" class="mt-1">
+                <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+                <button type="submit">Unlike</button>
+                <p><em>Already liked</em></p>
+              </form>
+            {% else %}
+              <form action="{{ url_for('foods.like_food', food_id=food.id) }}" method="POST" class="mt-1">
+                <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+                <button type="submit">Like</button>
+              </form>
+            {% endif %}
           </li>
         {% endfor %}
       </ul>

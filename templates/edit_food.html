@@ -28,7 +28,7 @@
 
       <div class="mt-1">
         <label for="ingredient_list">Ingredients (set quantity &gt;0 to include):</label>
-        <div id="ingredient_list" class="ingredient-list">
+        <div id="ingredient_list" class="column">
           {% for ing in user_ingredients %}
             <label>
               <input type="number" step="0.01" name="ingredient_{{ ing.id }}" min="0" max="10000"
