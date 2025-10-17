@@ -48,14 +48,22 @@
     <hr>
 
     <h3>30-Day Nutrition Statistics</h3>
-    <ul>
-      <li><strong>Average Protein (per day):</strong> {{ summary30.avg_protein }} g, target = {{ user.protein_target }} g/day</li>
+    <ul class="stats-row">
       <li>
-        <strong>Average Calories (per day):</strong> {{ summary30.avg_calories }} kcal 
-        target = {{ user.calorie_target }} kcal/day
-        over/under from target = {{ summary30.avg_calories - user.calorie_target }}
+        <strong>Average Protein:</strong> <br>
+        Eaten: {{ summary30.avg_protein | round(2) }} g <br>
+        Target: {{ user.protein_target }} g
       </li>
-      <li><strong>Protein Target Hit:</strong> {{ summary30.hit_days }}/{{ summary30.total_days }} days</li>
+      <li>
+        <strong>Protein Target Hit:</strong> <br>
+        {{ summary30.hit_days }}/{{ summary30.total_days }} days
+      </li>
+      <li>
+        <strong>Average Calories:</strong> <br>
+        Eaten: {{ summary30.avg_calories | round(2) }} kcal <br>
+        Target: {{ user.calorie_target }} kcal <br>
+        Difference: {{ (summary30.avg_calories - user.calorie_target) | round(2) }} kcal
+      </li>
     </ul>
 
     {% if summary30.total_days == 0 %}

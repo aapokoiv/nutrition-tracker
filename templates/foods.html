@@ -110,7 +110,7 @@
       <label>Ingredients (set quantity &gt;0 to include):</label>
       <div>
         {% for ing in ingredients %}
-        <div class="ingredient-item">
+        <div class="column">
           <input type="number" step="0.01" name="ingredient_{{ ing.id }}" min="0" max="10000" placeholder="0" class="mini">
           <span>{{ ing.name }} (Protein: {{ ing.protein }}, Calories: {{ ing.calories }})</span>
         </div>
