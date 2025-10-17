@@ -35,7 +35,7 @@ CREATE TABLE FoodIngredients (
 CREATE TABLE Eaten (
     id INTEGER PRIMARY KEY,
     user_id REFERENCES Users,
-    food_id REFERENCES Foods,
+    food_id REFERENCES Foods ON DELETE CASCADE,
     time TEXT DEFAULT (datetime('now')),
     quantity REAL DEFAULT 1.0,
     eaten_protein REAL DEFAULT 0.0,
