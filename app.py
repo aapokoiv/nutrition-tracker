@@ -158,34 +158,34 @@ def user_30day_summary(user_id):
 
 
 
-# Registeration
-@app.route("/register")
+@app.route("/register", methods=["GET", "POST"])
 def register():
-    messages=get_flashed_messages()
-    return render_template("register.html", messages=messages)
+    # Case 1: First time visiting the page (GET request)
+    if request.method == "GET":
+        return render_template("register.html", messages=[], filled={"username": ""})
 
-@app.route("/create", methods=["POST"])
-def create():
-    username = request.form["username"]
-    password1 = request.form["password1"]
-    password2 = request.form["password2"]
+    # Case 2: Form submitted (POST request)
+    username = request.form.get("username", "")
+    password1 = request.form.get("password1", "")
+    password2 = request.form.get("password2", "")
+
+    filled = {"username": username}  # For prefilling the username
 
     if not username or not password1:
         flash("Username and password are required")
-        return redirect(url_for("register"))
+        return render_template("register.html", messages=get_flashed_messages(), filled=filled)
 
     if len(username) > 30:
         flash("Username too long (max 30 characters)")
-        return redirect(url_for("register"))
-
+        return render_template("register.html", messages=get_flashed_messages(), filled=filled)
 
     if password1 != password2:
         flash("Passwords don't match")
-        return redirect(url_for("register"))
+        return render_template("register.html", messages=get_flashed_messages(), filled=filled)
 
     if len(password1) < 6 or len(password1) > 50:
         flash("Password must be between 6 and 50 characters long")
-        return redirect(url_for("register"))
+        return render_template("register.html", messages=get_flashed_messages(), filled=filled)
 
     password_hash = generate_password_hash(password1)
 
@@ -193,7 +193,7 @@ def create():
         users.create_user(username, password_hash)
     except Exception:
         flash("Username already taken")
-        return redirect(url_for("register"))
+        return render_template("register.html", messages=get_flashed_messages(), filled=filled)
 
     flash("Account created successfully")
     return redirect(url_for("login"))
@@ -205,18 +205,20 @@ def login():
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
 
+        filled = {"username": username}  # For prefilling the username
+
         user = users.get_user_by_username(username)
         if not user or not check_password_hash(user["password_hash"], password):
             flash("Wrong username or password")
-            return redirect(url_for("login"))
+            return render_template("login.html", messages=get_flashed_messages(), filled=filled)
 
         session["user_id"] = user["id"]
         session["csrf_token"] = secrets.token_hex(16)
         flash("Logged in successfully")
         return redirect(url_for("index"))
 
-    messages = get_flashed_messages()
-    return render_template("login.html", messages=messages)
+    # GET request
+    return render_template("login.html", messages=[], filled={"username": ""})
 
 @app.route("/logout")
 @login_required
