@@ -3,14 +3,13 @@ import random
 import string
 from datetime import datetime, timedelta
 
-DB_PATH = 'database.db'
-NUM_USERS = 1000  # number of random users
-MAX_INGREDIENTS_PER_USER = 500  # number of ingredients per user
-MAX_FOODS_PER_USER = 200  # number of foods per user
-MAX_FOODS_EATEN_DAILY = 10  # maximum foods a user can eat per day
-NUM_DAYS_HISTORY = 30  # number of days in the past for eating history
+DB_PATH = 'database.db'         # "Realistic" values:
+NUM_USERS = 1000                # 100000
+INGREDIENTS_PER_USER = 500      # 100-500
+FOODS_PER_USER = 500            # 100-500
+FOODS_EATEN_DAILY = 10          # 5-15
 
-# Food classes
+
 FOOD_CLASSES = ['Breakfast/Supper', 'Lunch/Dinner', 'Snack', 'Drink']
 
 def random_string(length=8):
@@ -31,7 +30,7 @@ def create_ingredients(conn):
     user_ids = [row[0] for row in cursor.fetchall()]
 
     for user_id in user_ids:
-        for _ in range(MAX_INGREDIENTS_PER_USER):
+        for _ in range(INGREDIENTS_PER_USER):
             name = random_string(10)
             protein = round(random.uniform(0.1, 50.0), 2)
             calories = random.randint(10, 1000)
@@ -53,7 +52,7 @@ def create_foods(conn):
         if not ingredients:
             continue
 
-        for _ in range(MAX_FOODS_PER_USER):
+        for _ in range(FOODS_PER_USER):
             food_name = random_string(12)
             food_class = random.choice(FOOD_CLASSES)
             selected_ingredients = random.sample(ingredients, k=random.randint(1, min(10, len(ingredients))))
@@ -88,9 +87,9 @@ def create_eaten_history(conn):
         if not foods:
             continue
 
-        for day_offset in range(NUM_DAYS_HISTORY):
+        for day_offset in range(30):
             date = datetime.now() - timedelta(days=day_offset)
-            num_foods_today = random.randint(1, MAX_FOODS_EATEN_DAILY)
+            num_foods_today = random.randint(1, FOODS_EATEN_DAILY)
             eaten_today = random.choices(foods, k=num_foods_today)
 
             for food in eaten_today:
@@ -98,7 +97,8 @@ def create_eaten_history(conn):
                 eaten_protein = food[1] * quantity
                 eaten_calories = food[2] * quantity
                 cursor.execute(
-                    "INSERT INTO Eaten (user_id, food_id, time, quantity, eaten_protein, eaten_calories) VALUES (?, ?, ?, ?, ?, ?)",
+                    """INSERT INTO Eaten (user_id, food_id, time, quantity, eaten_protein, eaten_calories) 
+                    VALUES (?, ?, ?, ?, ?, ?)""",
                     (user_id, food[0], date.strftime('%Y-%m-%d %H:%M:%S'), quantity, eaten_protein, eaten_calories)
                 )
 
