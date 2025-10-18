@@ -6,17 +6,12 @@ def get_user_by_id(user_id):
         FROM Users WHERE id = ?
     """
     result = db.query(sql, [user_id])
-    if not result:
-        raise ValueError(f"User with ID {user_id} not found")
-    return result[0]
+    return result[0] if result else None
 
 def get_user_by_username(username):
-    # Used in login() – needs id, username, password_hash
     sql = "SELECT id, username, password_hash FROM Users WHERE username = ?"
     result = db.query(sql, [username])
-    if not result:
-        raise ValueError(f"User with username {username} not found")
-    return result[0]
+    return result[0] if result else None
 
 def create_user(username, password_hash):
     sql = "INSERT INTO Users (username, password_hash) VALUES (?, ?)"

@@ -222,10 +222,11 @@ def login():
         return redirect(url_for("index"))
 
     # GET request
-    return render_template("login.html", messages=[], filled={"username": ""})
+    return render_template("login.html", messages=get_flashed_messages(), filled={"username": ""})
 
 @app.route("/logout")
 @login_required
 def logout():
     session.pop("user_id", None)
+    flash("Logged out")
     return redirect(url_for("login"))

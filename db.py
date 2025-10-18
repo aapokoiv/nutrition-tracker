@@ -11,7 +11,6 @@ def get_connection():
         con.row_factory = sqlite3.Row  # rows behave like dicts
         return con
     except sqlite3.Error:
-        # Just show a generic message, do not crash
         flash("Database connection failed. Please try again later.")
         return None
 
@@ -29,9 +28,6 @@ def execute(sql, params=None):
         last_id = cur.lastrowid
         g.last_insert_id = last_id  # store like original
         return last_id
-    except sqlite3.IntegrityError:
-        # Specific case like duplicate username etc.
-        raise
     except sqlite3.Error:
         flash("A database error occurred. Please try again later.")
         return None
