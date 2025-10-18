@@ -2,14 +2,12 @@ import db
 
 # ---------------- Ingredients ----------------
 def get_user_ingredients(user_id):
-    # Only name, id, protein, calories are used in foods.py
     return db.query(
         "SELECT id, name, protein, calories FROM Ingredients WHERE user_id = ?",
         [user_id]
     )
 
 def get_ingredient(user_id, ingredient_id):
-    # Only id, name, protein, calories used in edit_ingredient.html
     result = db.query(
         "SELECT id, name, protein, calories FROM Ingredients WHERE id = ? AND user_id = ?",
         [ingredient_id, user_id]
@@ -57,7 +55,6 @@ def delete_food(user_id, food_id):
     db.execute("DELETE FROM Foods WHERE id = ? AND user_id = ?", [food_id, user_id])
 
 def get_food(user_id, food_id):
-    # Used in edit_food() – needs id, name, class, user_id, totals
     result = db.query(
         """SELECT id, name, class, user_id, total_protein, total_calories 
         FROM Foods WHERE id = ? AND user_id = ?""",
@@ -87,56 +84,6 @@ def add_food_ingredient(food_id, ingredient_id, quantity):
 
 def delete_food_ingredients(food_id):
     db.execute("DELETE FROM FoodIngredients WHERE food_id = ?", [food_id])
-
-def search_public_foods(search_query, page=1, per_page=10):
-    offset = (page - 1) * per_page
-
-    base_select = """
-        SELECT f.id, f.name, f.class, f.total_protein, f.total_calories, u.username
-        FROM Foods f
-        JOIN Users u ON f.user_id = u.id
-        WHERE f.is_public = 1
-    """
-
-    if search_query:
-        food_rows = db.query(
-            base_select + " AND f.name LIKE ? LIMIT ? OFFSET ?",
-            [f"%{search_query}%", per_page, offset]
-        )
-    else:
-        food_rows = db.query(
-            base_select + " LIMIT ? OFFSET ?",
-            [per_page, offset]
-        )
-
-    results = []
-    for food in food_rows:
-        food_dict = {
-            'id': food['id'],
-            'name': food['name'],
-            'class': food['class'],
-            'total_protein': food['total_protein'],
-            'total_calories': food['total_calories'],
-            'username': food['username'],
-            'ingredients': []
-        }
-
-        ingredients = db.query("""
-            SELECT i.name, fi.quantity
-            FROM FoodIngredients fi
-            JOIN Ingredients i ON fi.ingredient_id = i.id
-            WHERE fi.food_id = ?
-        """, [food['id']])
-
-        for ing in ingredients:
-            food_dict['ingredients'].append({
-                'name': ing['name'],
-                'quantity': ing['quantity']
-            })
-
-        results.append(food_dict)
-
-    return results
 
 def total_foods(search_query):
     if search_query:
@@ -250,7 +197,6 @@ def update_food_totals(food_id):
         [round(total_prot, 2), round(total_cal, 2), food_id]
     )
 
-
 # ---------------- Get all ----------------
 def get_all(user_id):
     return db.query("""
@@ -265,3 +211,54 @@ def get_all(user_id):
         WHERE f.user_id = ?
         ORDER BY f.id
     """, [user_id])
+
+# ------------ Search --------------
+def search_public_foods(search_query, page=1, per_page=10):
+    offset = (page - 1) * per_page
+
+    base_select = """
+        SELECT f.id, f.name, f.class, f.total_protein, f.total_calories, u.username
+        FROM Foods f
+        JOIN Users u ON f.user_id = u.id
+        WHERE f.is_public = 1
+    """
+
+    if search_query:
+        food_rows = db.query(
+            base_select + " AND f.name LIKE ? LIMIT ? OFFSET ?",
+            [f"%{search_query}%", per_page, offset]
+        )
+    else:
+        food_rows = db.query(
+            base_select + " LIMIT ? OFFSET ?",
+            [per_page, offset]
+        )
+
+    results = []
+    for food in food_rows:
+        food_dict = {
+            'id': food['id'],
+            'name': food['name'],
+            'class': food['class'],
+            'total_protein': food['total_protein'],
+            'total_calories': food['total_calories'],
+            'username': food['username'],
+            'ingredients': []
+        }
+
+        ingredients = db.query("""
+            SELECT i.name, fi.quantity
+            FROM FoodIngredients fi
+            JOIN Ingredients i ON fi.ingredient_id = i.id
+            WHERE fi.food_id = ?
+        """, [food['id']])
+
+        for ing in ingredients:
+            food_dict['ingredients'].append({
+                'name': ing['name'],
+                'quantity': ing['quantity']
+            })
+
+        results.append(food_dict)
+
+    return results

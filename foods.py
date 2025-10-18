@@ -5,6 +5,8 @@ from auth import login_required, check_csrf
 
 foods_bp = Blueprint("foods", __name__, template_folder="templates")
 
+
+# --------- Foods page ----------
 @foods_bp.route("/foods", methods=["GET", "POST"])
 @login_required
 def all_foods():
@@ -13,7 +15,6 @@ def all_foods():
     ingredients = foods_repo.get_user_ingredients(user_id)
 
     search_query = request.args.get("search", "").strip().lower()
-
     ing_sort_by = request.args.get("ing_sort_by", "name")
     ing_sort_dir = request.args.get("ing_sort_dir", "asc")
     food_sort_by = request.args.get("food_sort_by", "name")
@@ -23,10 +24,8 @@ def all_foods():
     allowed_food_sorts = {"name", "class", "total_protein", "total_calories"}
 
     rows = foods_repo.get_all(user_id)
-
     liked_foods = foods_repo.get_liked_foods(user_id)
 
-    # Reconstruct foods dict and calculate totals
     foods = {}
     for row in rows:
         fid = row["food_id"]
@@ -45,7 +44,6 @@ def all_foods():
                 "quantity": row["quantity"]
             })
 
-    # Convert to list with totals
     foods_list = []
     for f in foods.values():
         total_prot = sum(ing["protein"] * ing.get("quantity", 0) for ing in f["ingredients"])
@@ -54,7 +52,7 @@ def all_foods():
         f["total_calories"] = round(total_cal, 2)
         foods_list.append(f)
 
-    # --- 🔍 Search filter ---
+    # ------- Search filter ----------
     if search_query:
         ingredients = [i for i in ingredients if search_query in i["name"].lower()]
         foods_list = [
@@ -71,7 +69,6 @@ def all_foods():
         ]
 
     # ---------- Sorting ----------
-    # Ingredients
     if ing_sort_by not in allowed_ing_sorts:
         ing_sort_by = "name"
     ing_reverse = ing_sort_dir == "desc"
@@ -80,7 +77,6 @@ def all_foods():
     else:
         ingredients = sorted(ingredients, key=lambda x: float(x[ing_sort_by]), reverse=ing_reverse)
 
-    # Foods
     if food_sort_by not in allowed_food_sorts:
         food_sort_by = "name"
     food_reverse = food_sort_dir == "desc"
@@ -102,34 +98,8 @@ def all_foods():
         food_sort_dir=food_sort_dir
     )
 
-@foods_bp.route("/search", methods=["GET"])
-@login_required
-def search_foods():
-    search_query = request.args.get("search", "")
-    page = request.args.get("page", 1, type=int)
-    per_page = 10
 
-    results = foods_repo.search_public_foods(search_query, page, per_page)
-    total = foods_repo.total_foods(search_query)
-    total_pages = (total + per_page - 1) // per_page
-
-    # Get liked foods of current user
-    user_id = session["user_id"]
-    liked_foods = foods_repo.get_liked_foods(user_id)
-    liked_food_ids = {food['id'] for food in liked_foods}  # set of IDs for fast lookup
-
-    messages = get_flashed_messages()
-
-    return render_template(
-        "search.html",
-        results=results,
-        liked_food_ids=liked_food_ids,
-        search_query=search_query,
-        page=page,
-        total_pages=total_pages,
-        messages=messages
-    )
-
+# ----------- Adding -------------
 @foods_bp.route("/ingredients/add", methods=["POST"])
 @login_required
 def add_ingredient():
@@ -178,6 +148,7 @@ def add_food():
     return redirect(url_for("foods.all_foods"))
 
 
+# ----------- Deleting ------------
 @foods_bp.route("/foods/<int:food_id>/delete", methods=["POST"])
 @login_required
 def delete_food(food_id):
@@ -196,6 +167,7 @@ def delete_ingredient(ingredient_id):
     return redirect(url_for("foods.all_foods"))
 
 
+# --------- Editing ----------
 @foods_bp.route("/ingredients/<int:ingredient_id>/edit", methods=["GET", "POST"])
 @login_required
 def edit_ingredient(ingredient_id):
@@ -231,18 +203,12 @@ def edit_food(food_id):
         check_csrf()
         food_name = request.form.get("food_name")
         food_class = request.form.get("food_class")
-
         if not food_name or len(food_name) > 100:
             flash("Input a name with max 100 letters")
             return redirect(url_for("foods.all_foods"))
 
-        # Update the food itself
         foods_repo.update_food(user_id, food_id, food_name, food_class)
-
-        # Reset food ingredients
         foods_repo.delete_food_ingredients(food_id)
-
-        # Rebuild from form input (iterate over ALL user ingredients)
         user_ingredients = foods_repo.get_user_ingredients(user_id)
 
         for ing in user_ingredients:
@@ -254,25 +220,21 @@ def edit_food(food_id):
             if qty > 0 and qty <= 10000:
                 foods_repo.add_food_ingredient(food_id, ing["id"], qty)
 
-        # Update totals (protein & calories)
         foods_repo.update_food_totals(food_id)
 
         flash(f"Food '{food_name}' updated.")
         return redirect(url_for("foods.all_foods"))
 
-    # GET: fetch current values
     food = foods_repo.get_food(user_id, food_id)
     if not food:
         flash("Food not found.")
         return redirect(url_for("foods.all_foods"))
 
-    # dict of existing ingredient_id -> quantity
     existing_fi = {
         fi["ingredient_id"]: fi["quantity"]
         for fi in foods_repo.get_food_ingredients(food_id)
     }
 
-    # all user ingredients
     user_ingredients = foods_repo.get_user_ingredients(user_id)
 
     return render_template(
@@ -282,20 +244,23 @@ def edit_food(food_id):
         food_ingredients=existing_fi,
     )
 
+
+# -------- Eating ----------
 @foods_bp.route("/foods/<int:food_id>/eat", methods=["POST"])
 @login_required
 def eat_food(food_id):
     check_csrf()
     user_id = session["user_id"]
     qty = float(request.form.get("quantity", 1.0))
-    # Fetch food totals
     food = foods_repo.get_food_nutrients(food_id)
     if not food:
         flash("Food not found.")
         return redirect(url_for("foods.all_foods"))
+    
     f = food[0]
     eaten_protein = (f["total_protein"] or 0.0) * qty
     eaten_calories = (f["total_calories"] or 0.0) * qty
+
     foods_repo.record_eaten(user_id, food_id, qty, eaten_protein, eaten_calories)
     flash("Recorded as eaten.")
     return redirect(request.referrer or url_for("foods.all_foods"))
@@ -309,14 +274,42 @@ def uneat_food(eaten_id):
     flash("Food removed from today's eaten list.")
     return redirect(url_for("index"))
 
+
+# ---------- Search -----------
+@foods_bp.route("/search", methods=["GET"])
+@login_required
+def search_foods():
+    search_query = request.args.get("search", "")
+    page = request.args.get("page", 1, type=int)
+    per_page = 10
+
+    results = foods_repo.search_public_foods(search_query, page, per_page)
+    total = foods_repo.total_foods(search_query)
+    total_pages = (total + per_page - 1) // per_page
+
+    user_id = session["user_id"]
+    liked_foods = foods_repo.get_liked_foods(user_id)
+    liked_food_ids = {food['id'] for food in liked_foods}
+    messages = get_flashed_messages()
+
+    return render_template(
+        "search.html",
+        results=results,
+        liked_food_ids=liked_food_ids,
+        search_query=search_query,
+        page=page,
+        total_pages=total_pages,
+        messages=messages
+    )
+
+
+# -------- Liking ----------
 @foods_bp.route("/foods/<int:food_id>/like", methods=["POST"])
 @login_required
 def like_food(food_id):
     check_csrf()
     user_id = session["user_id"]
-
     result = foods_repo.like_food(user_id, food_id)
-
     if result is not None:
         flash("Liked.")
 

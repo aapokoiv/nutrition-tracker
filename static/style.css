@@ -34,7 +34,6 @@ body {
 /* ===== Headings ===== */
 h1, h2, h3, h4, h5 {
   color: #444;
-  margin-bottom: 0.5rem;
 }
 
 h1, h2 {
@@ -56,10 +55,6 @@ form {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-}
-
-form label {
-  font-weight: 600;
 }
 
 input[type="text"],
@@ -86,6 +81,7 @@ select {
 }
 
 .row {
+  display: flex;
   flex-direction: row;
 }
 
@@ -250,7 +246,7 @@ li {
 /* Sorting form all in one row */
 form.sorting-form {
   display: flex;
-  flex-wrap: nowrap;       /* everything stays in one row */
+  flex-wrap: wrap;     /* everything stays in one row */
   align-items: center;     /* vertically center all items */
   gap: 0.5rem;
   font-size: 0.9rem;
@@ -282,4 +278,19 @@ form.sorting-form a {
   font-size: 0.85rem;
   align-self: center;
   margin-left: 0.25rem;
+}
+
+.cal-prot-targets {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: row;
+  gap: 0.5rem;
+}
+
+.target-text {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  margin-bottom: 0.5rem;
 }

@@ -14,6 +14,7 @@ app.secret_key = config.SECRET_KEY
 app.register_blueprint(foods_bp)
 
 
+# -------- Homepage ----------
 @app.route("/")
 @login_required
 def index():
@@ -44,13 +45,11 @@ def sum_ingredient_values(items, attribute, quantity_attribute="quantity"):
         total += i[attribute] * i.get(quantity_attribute, 1.0)
     return round(total, 2)
 
-
 @app.route("/update-protein", methods=["POST"])
 @login_required
 def update_protein():
     check_csrf()
     protein_target = request.form.get("protein_target", type=int)
-
     if protein_target is None or protein_target < 1 or protein_target > 1000000:
         flash("Invalid protein target. Please enter a number between 0 and 1000000.")
         return redirect(url_for("index"))
@@ -59,13 +58,11 @@ def update_protein():
     flash("Protein target updated.")
     return redirect(url_for("index"))
 
-
 @app.route("/update-calories", methods=["POST"])
 @login_required
 def update_calories():
     check_csrf()
     calorie_target = request.form.get("calorie_target", type=int)
-
     if calorie_target is None or calorie_target < 1 or calorie_target > 1000000:
         flash("Invalid calorie target. Please enter a number between 0 and 1000000.")
         return redirect(url_for("index"))
@@ -74,6 +71,8 @@ def update_calories():
     flash("Calorie target updated.")
     return redirect(url_for("index"))
 
+
+# -------- Profile --------
 @app.route("/image/<int:user_id>")
 def show_profile_pic(user_id):
     image = users.get_profile_picture(user_id)
@@ -81,17 +80,6 @@ def show_profile_pic(user_id):
         return Response(image, mimetype="image/jpeg")
     else:
         return redirect(url_for("static", filename="profile_pics/default.jpg"))
-
-# --- helper to fill missing days ---
-def fill_missing_days(summary_rows, days=7):
-    lookup = {r["day"]: r for r in summary_rows}
-    today = date.today()
-    filled = []
-    # oldest → newest
-    for i in range(days - 1, -1, -1):
-        d = (today - timedelta(days=i)).isoformat()
-        filled.append(lookup.get(d, {"day": d, "total_protein": 0.0, "total_calories": 0.0}))
-    return filled
 
 @app.route("/profile", methods=["GET", "POST"])
 @login_required
@@ -117,12 +105,8 @@ def profile():
             return redirect(url_for("profile", user_id=user_id))
 
     summary30 = user_30day_summary(user_id)
-
-    # Get raw 7-day stats
     summary7_raw = users.user_nutrition_stats(user_id, 7)
-    # Reverse, and fill missing days
-    summary7_reversed = list(reversed(summary7_raw))
-    summary7 = fill_missing_days(summary7_reversed, 7)
+    summary7 = fill_missing_days(list(reversed(summary7_raw)), 7)
 
     return render_template(
         "profile.html",
@@ -137,7 +121,6 @@ def user_30day_summary(user_id):
     protein_target = int(user["protein_target"] or 0)
 
     day_rows = users.user_nutrition_stats(user_id, 30)
-
     if not day_rows:
         return {
             "avg_calories": 0,
@@ -158,20 +141,26 @@ def user_30day_summary(user_id):
         "total_days": total_days
     }
 
+def fill_missing_days(summary_rows, days=7):
+    lookup = {r["day"]: r for r in summary_rows}
+    today = date.today()
+    filled = []
+    for i in range(days - 1, -1, -1):
+        d = (today - timedelta(days=i)).isoformat()
+        filled.append(lookup.get(d, {"day": d, "total_protein": 0.0, "total_calories": 0.0}))
+    return filled
 
 
+# --------- Register -----------
 @app.route("/register", methods=["GET", "POST"])
 def register():
-    # Case 1: First time visiting the page (GET request)
     if request.method == "GET":
         return render_template("register.html", messages=[], filled={"username": ""})
 
-    # Case 2: Form submitted (POST request)
     username = request.form.get("username", "")
     password1 = request.form.get("password1", "")
     password2 = request.form.get("password2", "")
-
-    filled = {"username": username}  # For prefilling the username
+    filled = {"username": username}
 
     if not username or not password1:
         flash("Username and password are required")
@@ -190,26 +179,24 @@ def register():
         return render_template("register.html", messages=get_flashed_messages(), filled=filled)
 
     password_hash = generate_password_hash(password1)
-
-    # Create the user — db.py now handles all DB errors
     result = users.create_user(username, password_hash)
 
     if result is None:
-        # Creation failed (likely due to unique constraint)
         flash("Username already taken")
         return render_template("register.html", messages=get_flashed_messages(), filled=filled)
 
     flash("Account created successfully")
     return redirect(url_for("login"))
 
-# Log in
+
+# ---------- Login/Logout -------------
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
 
-        filled = {"username": username}  # For prefilling the username
+        filled = {"username": username}
 
         user = users.get_user_by_username(username)
         if not user or not check_password_hash(user["password_hash"], password):
@@ -221,7 +208,6 @@ def login():
         flash("Logged in successfully")
         return redirect(url_for("index"))
 
-    # GET request
     return render_template("login.html", messages=get_flashed_messages(), filled={"username": ""})
 
 @app.route("/logout")

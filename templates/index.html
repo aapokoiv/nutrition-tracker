@@ -23,43 +23,55 @@
 
     <h3>Your nutrition intake for today</h3>
 
-    <h4>Protein</h4>
-    <p>Target: {{ pt }} g</p>
-    <p>Current intake: {{ pi or 0 }} g</p>
-    <form action="{{ url_for('update_protein') }}" method="post" class="row">
-      <label for="protein_target">Update protein target:</label>
-      <input type="number" name="protein_target" id="protein_target" min="1" max="1000000" required>
-      <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-      <button type="submit">Update protein target</button>
-    </form>
+    <div class="cal-prot-targets">
+      <div class="column">
+        <div class="target-text">
+          <h4>Protein</h4>
+          <p>Target: {{ pt }} g</p>
+          <p>Current intake: {{ pi or 0 }} g</p>
+        </div>
+        <form action="{{ url_for('update_protein') }}" method="post" class="row">
+          <label for="protein_target">Update protein target:</label>
+          <input type="number" name="protein_target" id="protein_target" min="1" max="1000000" required>
+          <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+          <button type="submit">Update protein target</button>
+        </form>
+      </div>
 
-    <h4>Calories</h4>
-    <p>Target: {{ ct }} kcal</p>
-    <p>Current intake: {{ ci or 0 }} kcal</p>
-    <form action="{{ url_for('update_calories') }}" method="post" class="row">
-      <label for="calorie_target">Update calorie target:</label>
-      <input type="number" name="calorie_target" id="calorie_target" min="1" max="1000000" required>
-      <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-      <button type="submit">Update calorie target</button>
-    </form>
+      <div class="column">
+        <div class="target-text">
+          <h4>Calories</h4>
+          <p>Target: {{ ct }} kcal</p>
+          <p>Current intake: {{ ci or 0 }} kcal</p>
+        </div>
+        <form action="{{ url_for('update_calories') }}" method="post" class="row">
+          <label for="calorie_target">Update calorie target:</label>
+          <input type="number" name="calorie_target" id="calorie_target" min="1" max="1000000" required>
+          <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+          <button type="submit">Update calorie target</button>
+        </form>
+      </div>
+    </div>
 
-    <h5>Eaten today</h5>
-    {% if foods %}
-      <ul>
-        {% for food in foods %}
-          <li>
-            <strong>{{ food.food_name }}</strong> — {{ food.eaten_calories }} kcal, {{ food.eaten_protein }} g protein
-            <small>at {{ food.eaten_time }}</small>
-            <form action="{{ url_for('foods.uneat_food', eaten_id=food.eaten_id) }}" method="post">
-              <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-              <button type="submit">Un-eat</button>
-            </form>
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p>No foods eaten yet today.</p>
-    {% endif %}
+    <div>
+      <h3>Eaten today:</h3>
+      {% if foods %}
+        <ul>
+          {% for food in foods %}
+            <li>
+              <strong>{{ food.food_name }}</strong> — {{ food.eaten_calories }} kcal, {{ food.eaten_protein }} g protein
+              <small>at {{ food.eaten_time }}</small>
+              <form action="{{ url_for('foods.uneat_food', eaten_id=food.eaten_id) }}" method="post">
+                <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+                <button type="submit">Un-eat</button>
+              </form>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No foods eaten yet today.</p>
+      {% endif %}
+    </div>
 
     <p>Logged in as {{ user }}</p>
   </div>

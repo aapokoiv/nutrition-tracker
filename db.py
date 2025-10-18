@@ -4,7 +4,6 @@ from flask import g, flash
 DB = "database.db"
 
 def get_connection():
-    """Get a SQLite connection with foreign keys and Row factory enabled."""
     try:
         con = sqlite3.connect(DB, timeout=10)
         con.execute("PRAGMA foreign_keys = ON")
@@ -16,7 +15,6 @@ def get_connection():
 
 
 def execute(sql, params=None):
-    """Execute INSERT/UPDATE/DELETE and return last inserted ID (or None)."""
     params = params or []
     con = get_connection()
     if con is None:
@@ -36,7 +34,6 @@ def execute(sql, params=None):
 
 
 def query(sql, params=None):
-    """Run SELECT queries and return all rows as list[sqlite3.Row]."""
     params = params or []
     con = get_connection()
     if con is None:
@@ -53,5 +50,4 @@ def query(sql, params=None):
 
 
 def last_insert_id():
-    """Return the last insert ID stored in flask.g."""
     return getattr(g, "last_insert_id", None)
