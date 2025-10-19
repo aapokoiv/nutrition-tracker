@@ -14,6 +14,9 @@ def get_user_by_username(username):
     return dict(result[0]) if result else None
 
 def create_user(username, password_hash):
+    existing = get_user_by_username(username)
+    if existing:
+        return None
     sql = "INSERT INTO Users (username, password_hash) VALUES (?, ?)"
     return db.execute(sql, [username, password_hash])
 
