@@ -3,6 +3,7 @@ CREATE TABLE Users (
     username TEXT UNIQUE,
     password_hash TEXT,
     profile_pic BLOB,
+    goals TEXT DEFAULT '';
     protein_target INTEGER DEFAULT 1,
     calorie_target INTEGER DEFAULT 1
 );

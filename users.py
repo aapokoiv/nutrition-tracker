@@ -46,3 +46,12 @@ def user_nutrition_stats(user_id, days):
         GROUP BY day
         ORDER BY day
     """, [user_id, days])
+
+def get_user_goals(user_id):
+    sql = "SELECT goals FROM Users WHERE id = ?"
+    result = db.query(sql, [user_id])
+    return result[0]["goals"] if result else ""
+
+def update_user_goals(user_id, goals_text):
+    sql = "UPDATE Users SET goals = ? WHERE id = ?"
+    db.execute(sql, [goals_text, user_id])

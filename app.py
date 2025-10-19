@@ -34,6 +34,7 @@ def index():
     user_id = session["user_id"]
     intake = foods_repo.get_user_daily_intake(user_id)
     eaten_today = foods_repo.get_user_eaten_today(user_id)
+    user_goals = users.get_user_goals(user_id)
 
     user = users.get_user_by_id(user_id)
     if not user:
@@ -48,7 +49,8 @@ def index():
                            ci = intake["total_calories"],
                            user = user["username"],
                            user_id = user_id,
-                           foods = eaten_today)
+                           foods = eaten_today,
+                           goals=user_goals)
 
 @app.template_filter("sum_values")
 def sum_ingredient_values(items, attribute, quantity_attribute="quantity"):
@@ -81,6 +83,15 @@ def update_calories():
 
     users.update_calorie_target(session["user_id"], calorie_target)
     flash("Calorie target updated.")
+    return redirect(url_for("index"))
+
+@app.route("/update-goals", methods=["POST"])
+@login_required
+def update_goals():
+    check_csrf()
+    goals_text = request.form.get("goals", "")
+    users.update_user_goals(session["user_id"], goals_text)
+    flash("Goals updated successfully.")
     return redirect(url_for("index"))
 
 

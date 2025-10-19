@@ -294,3 +294,21 @@ form.sorting-form a {
   flex-direction: column;
   margin-bottom: 0.5rem;
 }
+
+textarea {
+    width: 100%;
+    padding: 8px;
+    border: 2px solid #333;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 16px;
+    line-height: 1.5;
+    background-color: #fff;
+    color: #000;
+    outline: none;
+}
+
+textarea:focus {
+    border-color: #007BFF;
+    box-shadow: 0 0 3px #007BFF;
+}
