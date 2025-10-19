@@ -1,79 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <div class="container">
+    <div class="container">
 
-    <div class="navbar">
-      <a href="{{ url_for('index') }}" class="btn-link">Homepage</a>
-      <a href="{{ url_for('foods.all_foods') }}" class="btn-link">Foods & Ingredients</a>
-      <a href="{{ url_for('profile') }}" class="btn-link">Profile</a>
-      <a href="{{ url_for('foods.search_foods') }}" class="btn-link">Community Foods</a>
-      <a href="{{ url_for('logout') }}" class="btn-link">Logout</a>
-    </div>
-
-    {% for m in messages %}
-      <p class="message">{{ m }}</p>
-    {% endfor %}
-
-    <h3>Your nutrition intake for today</h3>
-
-    <div class="cal-prot-targets">
-      <div class="column">
-        <div class="target-text">
-          <h4>Protein</h4>
-          <p>Target: {{ pt }} g</p>
-          <p>Current intake: {{ pi or 0 }} g</p>
+        <div class="navbar">
+            <a href="{{ url_for('index') }}" class="btn-link">Homepage</a>
+            <a href="{{ url_for('foods.all_foods') }}" class="btn-link">Foods & Ingredients</a>
+            <a href="{{ url_for('profile') }}" class="btn-link">Profile</a>
+            <a href="{{ url_for('foods.search_foods') }}" class="btn-link">Community Foods</a>
+            <a href="{{ url_for('logout') }}" class="btn-link">Logout</a>
         </div>
-        <form action="{{ url_for('update_protein') }}" method="post" class="row">
-          <label for="protein_target">Update protein target:</label>
-          <input type="number" name="protein_target" id="protein_target" min="1" max="1000000" required>
-          <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-          <button type="submit">Update protein target</button>
-        </form>
-      </div>
 
-      <div class="column">
-        <div class="target-text">
-          <h4>Calories</h4>
-          <p>Target: {{ ct }} kcal</p>
-          <p>Current intake: {{ ci or 0 }} kcal</p>
+        {% for m in messages %}
+            <p class="message">{{ m }}</p>
+        {% endfor %}
+
+        <h3>Your nutrition intake for today</h3>
+
+        <div class="cal-prot-targets">
+            <div class="column">
+                <div class="target-text">
+                    <h4>Protein</h4>
+                    <p>Target: {{ pt }} g</p>
+                    <p>Current intake: {{ pi or 0 }} g</p>
+                </div>
+                <form action="{{ url_for('update_protein') }}" method="post" class="row">
+                    <label for="protein_target">Update protein target:</label>
+                    <input type="number" name="protein_target" id="protein_target" min="1" max="1000000" required>
+                    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+                    <button type="submit">Update protein target</button>
+                </form>
+            </div>
+
+            <div class="column">
+                <div class="target-text">
+                    <h4>Calories</h4>
+                    <p>Target: {{ ct }} kcal</p>
+                    <p>Current intake: {{ ci or 0 }} kcal</p>
+                </div>
+                <form action="{{ url_for('update_calories') }}" method="post" class="row">
+                    <label for="calorie_target">Update calorie target:</label>
+                    <input type="number" name="calorie_target" id="calorie_target" min="1" max="1000000" required>
+                    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+                    <button type="submit">Update calorie target</button>
+                </form>
+            </div>
         </div>
-        <form action="{{ url_for('update_calories') }}" method="post" class="row">
-          <label for="calorie_target">Update calorie target:</label>
-          <input type="number" name="calorie_target" id="calorie_target" min="1" max="1000000" required>
-          <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-          <button type="submit">Update calorie target</button>
-        </form>
-      </div>
-    </div>
 
-    <div>
-      <h3>Eaten today:</h3>
-      {% if foods %}
-        <ul>
-          {% for food in foods %}
-            <li>
-              <strong>{{ food.food_name }}</strong> — {{ food.eaten_calories }} kcal, {{ food.eaten_protein }} g protein
-              <small>at {{ food.eaten_time }}</small>
-              <form action="{{ url_for('foods.uneat_food', eaten_id=food.eaten_id) }}" method="post">
-                <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-                <button type="submit">Un-eat</button>
-              </form>
-            </li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <p>No foods eaten yet today.</p>
-      {% endif %}
-    </div>
+        <div>
+            <h3>Eaten today:</h3>
+            {% if foods %}
+                <ul>
+                    {% for food in foods %}
+                        <li>
+                            <strong>{{ food.food_name }}</strong>
+                             — {{ food.eaten_calories | round(2)  }} kcal, {{ food.eaten_protein | round(2)  }} g protein
+                            <small>at {{ food.eaten_time }}</small>
+                            <form action="{{ url_for('foods.uneat_food', eaten_id=food.eaten_id) }}" method="post">
+                                <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+                                <button type="submit">Un-eat</button>
+                            </form>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+            <p>No foods eaten yet today.</p>
+            {% endif %}
+        </div>
 
-    <p>Logged in as {{ user }}</p>
-  </div>
+        <p>Logged in as {{ user }}</p>
+    </div>
 </body>
 </html>

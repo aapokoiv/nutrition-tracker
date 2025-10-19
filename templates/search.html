@@ -1,91 +1,91 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Community Foods</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="UTF-8">
+    <title>Community Foods</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <div class="container">
+    <div class="container">
 
-  <div class="navbar">
-    <a href="{{ url_for('index') }}" class="btn-link">Homepage</a>
-    <a href="{{ url_for('foods.all_foods') }}" class="btn-link">Foods & Ingredients</a>
-    <a href="{{ url_for('profile') }}" class="btn-link">Profile</a>
-    <a href="{{ url_for('foods.search_foods') }}" class="btn-link">Community Foods</a>
-    <a href="{{ url_for('logout') }}" class="btn-link">Logout</a>
-  </div>
+        <div class="navbar">
+            <a href="{{ url_for('index') }}" class="btn-link">Homepage</a>
+            <a href="{{ url_for('foods.all_foods') }}" class="btn-link">Foods & Ingredients</a>
+            <a href="{{ url_for('profile') }}" class="btn-link">Profile</a>
+            <a href="{{ url_for('foods.search_foods') }}" class="btn-link">Community Foods</a>
+            <a href="{{ url_for('logout') }}" class="btn-link">Logout</a>
+        </div>
 
-    <h1>Community Foods</h1>
+        <h1>Community Foods</h1>
 
-    <form method="GET" action="{{ url_for('foods.search_foods') }}">
-      <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-      <input type="text" name="search" placeholder="Search for foods..." value="{{ search_query }}" maxlength="100">
-      <button type="submit">Search</button>
-    </form>
+        <form method="GET" action="{{ url_for('foods.search_foods') }}">
+            <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+            <input type="text" name="search" placeholder="Search for foods..." value="{{ search_query }}" maxlength="100">
+            <button type="submit">Search</button>
+        </form>
 
-    {% for m in messages %}
-      <p class="message">{{ m }}</p>
-    {% endfor %}
-
-    <div class="pagination mt-2">
-      {% if page > 1 %}
-        <a href="{{ url_for('foods.search_foods', search=search_query, page=page-1) }}">Previous</a>
-      {% endif %}
-      <span>Page {{ page }} of {{ total_pages }}</span>
-      {% if page < total_pages %}
-        <a href="{{ url_for('foods.search_foods', search=search_query, page=page+1) }}">Next</a>
-      {% endif %}
-    </div>
-
-    {% if results %}
-      <h2>Results</h2>
-      <ul>
-        {% for food in results %}
-          <li>
-            <h3>{{ food.name }}</h3>
-            <p><strong>Class:</strong> {{ food.class }}</p>
-            <p><strong>Added by:</strong> {{ food.username }}</p>
-
-            <p><strong>Ingredients:</strong></p>
-            <ul>
-              {% for ing in food.ingredients %}
-                <li>{{ ing.quantity }} × {{ ing.name }}</li>
-              {% endfor %}
-            </ul>
-
-            <p><strong>Total Protein:</strong> {{ food.total_protein }} g</p>
-            <p><strong>Total Calories:</strong> {{ food.total_calories }} kcal</p>
-
-            {% if food.id in liked_food_ids %}
-              <form action="{{ url_for('foods.unlike_food', food_id=food.id) }}" method="POST" class="mt-1">
-                <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-                <button type="submit">Unlike</button>
-                <p><em>Already liked</em></p>
-              </form>
-            {% else %}
-              <form action="{{ url_for('foods.like_food', food_id=food.id) }}" method="POST" class="mt-1">
-                <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
-                <button type="submit">Like</button>
-              </form>
-            {% endif %}
-          </li>
+        {% for m in messages %}
+            <p class="message">{{ m }}</p>
         {% endfor %}
-      </ul>
-    {% else %}
-      <p>No results found for your search.</p>
-    {% endif %}
 
-    <div class="pagination mt-2">
-      {% if page > 1 %}
-        <a href="{{ url_for('foods.search_foods', search=search_query, page=page-1) }}">Previous</a>
-      {% endif %}
-      <span>Page {{ page }} of {{ total_pages }}</span>
-      {% if page < total_pages %}
-        <a href="{{ url_for('foods.search_foods', search=search_query, page=page+1) }}">Next</a>
-      {% endif %}
+        <div class="pagination mt-2">
+            {% if page > 1 %}
+                <a href="{{ url_for('foods.search_foods', search=search_query, page=page-1) }}">Previous</a>
+            {% endif %}
+            <span>Page {{ page }} of {{ total_pages }}</span>
+            {% if page < total_pages %}
+                <a href="{{ url_for('foods.search_foods', search=search_query, page=page+1) }}">Next</a>
+            {% endif %}
+        </div>
+
+        {% if results %}
+            <h2>Results</h2>
+            <ul>
+                {% for food in results %}
+                    <li>
+                        <h3>{{ food.name }}</h3>
+                        <p><strong>Class:</strong> {{ food.class }}</p>
+                        <p><strong>Added by:</strong> {{ food.username }}</p>
+
+                        <p><strong>Ingredients:</strong></p>
+                        <ul>
+                            {% for ing in food.ingredients %}
+                                <li>{{ ing.quantity }} × {{ ing.name }}</li>
+                            {% endfor %}
+                        </ul>
+
+                        <p><strong>Total Protein:</strong> {{ food.total_protein }} g</p>
+                        <p><strong>Total Calories:</strong> {{ food.total_calories }} kcal</p>
+
+                        {% if food.id in liked_food_ids %}
+                            <form action="{{ url_for('foods.unlike_food', food_id=food.id) }}" method="POST" class="mt-1">
+                                <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+                                <button type="submit">Unlike</button>
+                                <p><em>Already liked</em></p>
+                            </form>
+                        {% else %}
+                            <form action="{{ url_for('foods.like_food', food_id=food.id) }}" method="POST" class="mt-1">
+                                <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+                                <button type="submit">Like</button>
+                            </form>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No results found for your search.</p>
+        {% endif %}
+
+        <div class="pagination mt-2">
+            {% if page > 1 %}
+                <a href="{{ url_for('foods.search_foods', search=search_query, page=page-1) }}">Previous</a>
+            {% endif %}
+            <span>Page {{ page }} of {{ total_pages }}</span>
+            {% if page < total_pages %}
+                <a href="{{ url_for('foods.search_foods', search=search_query, page=page+1) }}">Next</a>
+            {% endif %}
+        </div>
+
     </div>
-
-  </div>
 </body>
 </html>
