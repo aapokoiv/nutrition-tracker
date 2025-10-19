@@ -3,11 +3,11 @@ import random
 import string
 from datetime import datetime, timedelta
 
-DB_PATH = 'database.db'         # "Realistic" values:
-NUM_USERS = 1000                # 100000
-INGREDIENTS_PER_USER = 500      # 100-500
-FOODS_PER_USER = 500            # 100-500
-FOODS_EATEN_DAILY = 10          # 5-15
+DB_PATH = 'database.db'
+NUM_USERS = 10000
+INGREDIENTS_PER_USER = 200
+FOODS_PER_USER = 100
+FOODS_EATEN_DAILY = 10
 
 
 FOOD_CLASSES = ['Breakfast/Supper', 'Lunch/Dinner', 'Snack', 'Drink']
@@ -32,8 +32,8 @@ def create_ingredients(conn):
     for user_id in user_ids:
         for _ in range(INGREDIENTS_PER_USER):
             name = random_string(10)
-            protein = round(random.uniform(0.1, 50.0), 2)
-            calories = random.randint(10, 1000)
+            protein = round(random.uniform(0.1, 30), 2)
+            calories = random.randint(2, 300)
             cursor.execute(
                 "INSERT INTO Ingredients (name, user_id, protein, calories) VALUES (?, ?, ?, ?)",
                 (name, user_id, protein, calories)
@@ -55,7 +55,9 @@ def create_foods(conn):
         for _ in range(FOODS_PER_USER):
             food_name = random_string(12)
             food_class = random.choice(FOOD_CLASSES)
-            selected_ingredients = random.sample(ingredients, k=random.randint(1, min(10, len(ingredients))))
+
+            # 1-20 Ingredients per food
+            selected_ingredients = random.sample(ingredients, k=random.randint(1, min(20, len(ingredients))))
 
             total_protein = sum(i[1] for i in selected_ingredients)
             total_calories = sum(i[2] for i in selected_ingredients)

@@ -215,50 +215,64 @@ def get_all(user_id):
 # ------------ Search --------------
 def search_public_foods(search_query, page=1, per_page=10):
     offset = (page - 1) * per_page
-
-    base_select = """
-        SELECT f.id, f.name, f.class, f.total_protein, f.total_calories, u.username
-        FROM Foods f
-        JOIN Users u ON f.user_id = u.id
-        WHERE f.is_public = 1
-    """
+    params = []
+    where_clause = "WHERE f.is_public = 1"
 
     if search_query:
-        food_rows = db.query(
-            base_select + " AND f.name LIKE ? LIMIT ? OFFSET ?",
-            [f"%{search_query}%", per_page, offset]
-        )
-    else:
-        food_rows = db.query(
-            base_select + " LIMIT ? OFFSET ?",
-            [per_page, offset]
-        )
+        where_clause += " AND f.name LIKE ?"
+        params.append(f"%{search_query}%")
 
-    results = []
-    for food in food_rows:
-        food_dict = {
-            'id': food['id'],
-            'name': food['name'],
-            'class': food['class'],
-            'total_protein': food['total_protein'],
-            'total_calories': food['total_calories'],
-            'username': food['username'],
-            'ingredients': []
-        }
+    id_query = f"""
+        SELECT f.id
+        FROM Foods f
+        {where_clause}
+        ORDER BY f.id
+        LIMIT ? OFFSET ?
+    """
+    id_params = params + [per_page, offset]
+    food_ids = [row["id"] for row in db.query(id_query, id_params)]
 
-        ingredients = db.query("""
-            SELECT i.name, fi.quantity
-            FROM FoodIngredients fi
-            JOIN Ingredients i ON fi.ingredient_id = i.id
-            WHERE fi.food_id = ?
-        """, [food['id']])
+    if not food_ids:
+        return []
 
-        for ing in ingredients:
-            food_dict['ingredients'].append({
-                'name': ing['name'],
-                'quantity': ing['quantity']
+    placeholders = ",".join("?" * len(food_ids))
+    full_query = f"""
+        SELECT 
+            f.id AS food_id,
+            f.name AS food_name,
+            f.class AS food_class,
+            f.total_protein,
+            f.total_calories,
+            u.username,
+            i.name AS ingredient_name,
+            fi.quantity
+        FROM Foods f
+        JOIN Users u ON f.user_id = u.id
+        LEFT JOIN FoodIngredients fi ON fi.food_id = f.id
+        LEFT JOIN Ingredients i ON fi.ingredient_id = i.id
+        WHERE f.id IN ({placeholders})
+        ORDER BY f.id
+    """
+
+    rows = db.query(full_query, food_ids)
+
+    foods = {}
+    for row in rows:
+        fid = row["food_id"]
+        if fid not in foods:
+            foods[fid] = {
+                "id": fid,
+                "name": row["food_name"],
+                "class": row["food_class"],
+                "total_protein": row["total_protein"],
+                "total_calories": row["total_calories"],
+                "username": row["username"],
+                "ingredients": []
+            }
+        if row["ingredient_name"]:
+            foods[fid]["ingredients"].append({
+                "name": row["ingredient_name"],
+                "quantity": row["quantity"]
             })
 
-        results.append(food_dict)
-
-    return results
+    return [foods[fid] for fid in food_ids if fid in foods]

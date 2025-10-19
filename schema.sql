@@ -49,8 +49,13 @@ CREATE TABLE Likes (
     PRIMARY KEY (user_id, food_id)
 );
 
-CREATE INDEX idx_ingredients_user ON Ingredients(user_id);
-CREATE INDEX idx_foods_user ON Foods(user_id);
-CREATE INDEX idx_foodingredients_food ON FoodIngredients(food_id);
-CREATE INDEX idx_likes_user ON Likes(user_id);
+CREATE INDEX idx_foods_ispublic_name ON Foods(is_public, name);
+CREATE INDEX idx_foods_user_ispublic ON Foods(user_id, is_public);
+CREATE INDEX idx_foods_public_order ON Foods(is_public, id);
+CREATE INDEX idx_foods_user_order ON Foods(user_id, id);
+CREATE INDEX idx_foods_class_user ON Foods(class, user_id);
+CREATE INDEX idx_ingredients_user_name ON Ingredients(user_id, name);
+CREATE INDEX idx_foodingredients_food_ingredient ON FoodIngredients(food_id, ingredient_id);
+CREATE INDEX idx_eaten_user_date ON Eaten(user_id, date(time));
+CREATE INDEX idx_foods_id ON Foods(id);
 CREATE INDEX idx_eaten_user_time ON Eaten(user_id, time);
