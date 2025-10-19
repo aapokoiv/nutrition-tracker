@@ -139,7 +139,7 @@ def add_food():
             qty = float(raw_qty) if raw_qty.strip() != "" else 0.0
         except ValueError:
             qty = 0.0
-        if qty > 0 and qty <= 10000:
+        if 0 < qty <= 10000:
             foods_repo.add_food_ingredient(food_id, ing["id"], qty)
 
     foods_repo.update_food_totals(food_id)
@@ -216,7 +216,7 @@ def edit_food(food_id):
                 qty = float(raw_val) if raw_val.strip() != "" else 0
             except ValueError:
                 qty = 0
-            if qty > 0 and qty <= 10000:
+            if 0 < qty <= 10000:
                 foods_repo.add_food_ingredient(food_id, ing["id"], qty)
 
         foods_repo.update_food_totals(food_id)
