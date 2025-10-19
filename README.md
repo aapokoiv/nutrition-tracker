@@ -4,14 +4,14 @@
 
 * Creating an account and logging in
 * Adding ingredients and making meals from them
-* Giving meals a class
+* Giving meals a class and a name
 * Modifying and deleting foods and ingredients you have added
-* Searching foods and ingredients based on name, classes or properities
+* Searching and sorting foods and ingredients based on name, classes or properities
 * Searching what others have added and being able to like them
-* Being able to eat foods
+* Being able to eat liked and own foods
+* Being able to set nutrient targets and writing down goals
 * Tracking your nutrition intake daily
 * Profile with statistics and history
-* Foods page with personal foods, ingredients and foods you have liked
 
 ## Installation
 
@@ -59,10 +59,12 @@ Test dataset parameters:
 | Profile                  | < 0.1 s         |
 | Foods page               | < 0.1 s         |
 | Add/Edit/Delete pages    | < 0.05 s        |
-| Search Public Foods      | ~1.2–1.5 s first load, < 0.1 s subsequent loads |
+| Search Public Foods      | ~1.2–1.5 s first load, < 0.1 s subsequent loads, searching wiht query ~0.1–1.5 s|
+
 
 - Most queries are **fast** due to indexing and precomputed totals in `Foods`.
 - The first load of search is slower because SQLite reads large table pages; subsequent loads are cached and fast.
 - Current performance is acceptable and realistic for this application.
+- Load time when searching with queries depends on how many results it finds
 
 ---

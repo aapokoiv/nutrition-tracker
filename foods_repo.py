@@ -70,10 +70,11 @@ def get_food_ingredients(food_id):
         WHERE fi.food_id = ?
     """, [food_id])
 
-def get_food_nutrients(food_id):
+def get_food_nutrients(food_id, user_id):
     return db.query(
-        "SELECT id, total_protein, total_calories FROM Foods WHERE id = ?",
-        [food_id]
+        """SELECT id, total_protein, total_calories 
+        FROM Foods WHERE id = ? AND (is_public = 1 OR user_id = ?)""",
+        [food_id, user_id]
     )
 
 def add_food_ingredient(food_id, ingredient_id, quantity):

@@ -174,8 +174,13 @@ def edit_ingredient(ingredient_id):
     if request.method == "POST":
         check_csrf()
         name = request.form.get("name")
-        protein = float(request.form.get("protein", 0))
-        calories = float(request.form.get("calories", 0))
+
+        try:
+            protein = float(request.form.get("protein", 0) or 0)
+            calories = float(request.form.get("calories", 0) or 0)
+        except (ValueError, TypeError):
+            flash("Invalid numeric input")
+            return redirect(url_for("foods.all_foods"))
 
         if not name or len(name) > 100 or protein > 10000 or calories > 1000000:
             flash("Inputted values out of allowed range")
@@ -251,7 +256,7 @@ def eat_food(food_id):
     check_csrf()
     user_id = session["user_id"]
     qty = float(request.form.get("quantity", 1.0))
-    food = foods_repo.get_food_nutrients(food_id)
+    food = foods_repo.get_food_nutrients(food_id, user_id)
     if not food:
         flash("Food not found.")
         return redirect(url_for("foods.all_foods"))

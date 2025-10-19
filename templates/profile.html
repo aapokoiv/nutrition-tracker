@@ -28,7 +28,8 @@
         <h2>{{ user.username }}'s Profile</h2>
 
         <div>
-            <img class="profile-pic" src="{{ url_for('show_profile_pic', user_id=user.id) }}" alt="{{ user.username }}'s profile picture"/>
+            <img class="profile-pic" src="{{ url_for('show_profile_pic', user_id=user.id) }}" 
+            alt="{{ user.username }}'s profile picture"/>
         </div>
 
         <hr>

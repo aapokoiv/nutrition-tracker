@@ -43,10 +43,10 @@ def index():
 
     return render_template("index.html",
                            messages=messages,
-                           pt = user.get("protein_target", 0),
-                           ct = user.get("calorie_target", 0),
-                           pi = intake["total_protein"],
-                           ci = intake["total_calories"],
+                           protein_target = user.get("protein_target", 0),
+                           calorie_target = user.get("calorie_target", 0),
+                           protein_intake = intake["total_protein"],
+                           calorie_intake = intake["total_calories"],
                            user = user.get("username", ""),
                            user_id = user_id,
                            foods = eaten_today,
@@ -246,5 +246,6 @@ def login():
 @login_required
 def logout():
     session.pop("user_id", None)
+    session.pop("csrf_token", None)
     flash("Logged out")
     return redirect(url_for("login"))

@@ -36,8 +36,8 @@
             <div class="column">
                 <div class="target-text">
                     <h4>Protein</h4>
-                    <p>Target: {{ pt }} g</p>
-                    <p>Current intake: {{ pi or 0 }} g</p>
+                    <p>Target: {{ protein_target }} g</p>
+                    <p>Current intake: {{ protein_intake or 0 }} g</p>
                 </div>
                 <form action="{{ url_for('update_protein') }}" method="post" class="row">
                     <label for="protein_target">Update protein target:</label>
@@ -50,8 +50,8 @@
             <div class="column">
                 <div class="target-text">
                     <h4>Calories</h4>
-                    <p>Target: {{ ct }} kcal</p>
-                    <p>Current intake: {{ ci or 0 }} kcal</p>
+                    <p>Target: {{ calorie_target }} kcal</p>
+                    <p>Current intake: {{ calorie_intake or 0 }} kcal</p>
                 </div>
                 <form action="{{ url_for('update_calories') }}" method="post" class="row">
                     <label for="calorie_target">Update calorie target:</label>

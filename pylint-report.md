@@ -1,5 +1,5 @@
 # Pylint report
-
+Pylint gave us this report:
 ```
 ************* Module foods_repo
 foods_repo.py:1:0: C0114: Missing module docstring (missing-module-docstring)
@@ -14,19 +14,19 @@ foods_repo.py:50:0: C0116: Missing function or method docstring (missing-functio
 foods_repo.py:57:0: C0116: Missing function or method docstring (missing-function-docstring)
 foods_repo.py:65:0: C0116: Missing function or method docstring (missing-function-docstring)
 foods_repo.py:73:0: C0116: Missing function or method docstring (missing-function-docstring)
-foods_repo.py:79:0: C0116: Missing function or method docstring (missing-function-docstring)
-foods_repo.py:85:0: C0116: Missing function or method docstring (missing-function-docstring)
-foods_repo.py:88:0: C0116: Missing function or method docstring (missing-function-docstring)
-foods_repo.py:103:0: C0116: Missing function or method docstring (missing-function-docstring)
-foods_repo.py:106:0: C0116: Missing function or method docstring (missing-function-docstring)
-foods_repo.py:109:0: C0116: Missing function or method docstring (missing-function-docstring)
-foods_repo.py:150:0: C0116: Missing function or method docstring (missing-function-docstring)
-foods_repo.py:156:0: C0116: Missing function or method docstring (missing-function-docstring)
-foods_repo.py:159:0: C0116: Missing function or method docstring (missing-function-docstring)
-foods_repo.py:174:0: C0116: Missing function or method docstring (missing-function-docstring)
-foods_repo.py:186:0: C0116: Missing function or method docstring (missing-function-docstring)
-foods_repo.py:201:0: C0116: Missing function or method docstring (missing-function-docstring)
-foods_repo.py:216:0: C0116: Missing function or method docstring (missing-function-docstring)
+foods_repo.py:80:0: C0116: Missing function or method docstring (missing-function-docstring)
+foods_repo.py:86:0: C0116: Missing function or method docstring (missing-function-docstring)
+foods_repo.py:89:0: C0116: Missing function or method docstring (missing-function-docstring)
+foods_repo.py:104:0: C0116: Missing function or method docstring (missing-function-docstring)
+foods_repo.py:107:0: C0116: Missing function or method docstring (missing-function-docstring)
+foods_repo.py:110:0: C0116: Missing function or method docstring (missing-function-docstring)
+foods_repo.py:151:0: C0116: Missing function or method docstring (missing-function-docstring)
+foods_repo.py:157:0: C0116: Missing function or method docstring (missing-function-docstring)
+foods_repo.py:160:0: C0116: Missing function or method docstring (missing-function-docstring)
+foods_repo.py:175:0: C0116: Missing function or method docstring (missing-function-docstring)
+foods_repo.py:187:0: C0116: Missing function or method docstring (missing-function-docstring)
+foods_repo.py:202:0: C0116: Missing function or method docstring (missing-function-docstring)
+foods_repo.py:217:0: C0116: Missing function or method docstring (missing-function-docstring)
 ************* Module seed
 seed.py:1:0: C0114: Missing module docstring (missing-module-docstring)
 seed.py:15:0: C0116: Missing function or method docstring (missing-function-docstring)
@@ -46,12 +46,12 @@ foods.py:122:0: C0116: Missing function or method docstring (missing-function-do
 foods.py:153:0: C0116: Missing function or method docstring (missing-function-docstring)
 foods.py:161:0: C0116: Missing function or method docstring (missing-function-docstring)
 foods.py:172:0: C0116: Missing function or method docstring (missing-function-docstring)
-foods.py:198:0: C0116: Missing function or method docstring (missing-function-docstring)
-foods.py:250:0: C0116: Missing function or method docstring (missing-function-docstring)
-foods.py:269:0: C0116: Missing function or method docstring (missing-function-docstring)
-foods.py:280:0: C0116: Missing function or method docstring (missing-function-docstring)
-foods.py:308:0: C0116: Missing function or method docstring (missing-function-docstring)
-foods.py:319:0: C0116: Missing function or method docstring (missing-function-docstring)
+foods.py:203:0: C0116: Missing function or method docstring (missing-function-docstring)
+foods.py:255:0: C0116: Missing function or method docstring (missing-function-docstring)
+foods.py:274:0: C0116: Missing function or method docstring (missing-function-docstring)
+foods.py:285:0: C0116: Missing function or method docstring (missing-function-docstring)
+foods.py:313:0: C0116: Missing function or method docstring (missing-function-docstring)
+foods.py:324:0: C0116: Missing function or method docstring (missing-function-docstring)
 ************* Module config
 config.py:1:0: C0114: Missing module docstring (missing-module-docstring)
 ************* Module auth
@@ -100,7 +100,7 @@ users.py:50:0: C0116: Missing function or method docstring (missing-function-doc
 users.py:55:0: C0116: Missing function or method docstring (missing-function-docstring)
 
 ------------------------------------------------------------------
-Your code has been rated at 8.06/10 (previous run: 8.03/10, +0.03)
+Your code has been rated at 8.08/10 (previous run: 8.06/10, +0.02)
 ```
 
 Next we will go through the report and explain why certain things have not been "fixed".

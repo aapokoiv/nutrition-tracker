@@ -3,7 +3,7 @@ CREATE TABLE Users (
     username TEXT UNIQUE,
     password_hash TEXT,
     profile_pic BLOB,
-    goals TEXT DEFAULT '';
+    goals TEXT DEFAULT '',
     protein_target INTEGER DEFAULT 1,
     calorie_target INTEGER DEFAULT 1
 );
@@ -58,5 +58,4 @@ CREATE INDEX idx_foods_class_user ON Foods(class, user_id);
 CREATE INDEX idx_ingredients_user_name ON Ingredients(user_id, name);
 CREATE INDEX idx_foodingredients_food_ingredient ON FoodIngredients(food_id, ingredient_id);
 CREATE INDEX idx_eaten_user_date ON Eaten(user_id, date(time));
-CREATE INDEX idx_foods_id ON Foods(id);
 CREATE INDEX idx_eaten_user_time ON Eaten(user_id, time);
