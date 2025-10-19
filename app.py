@@ -89,7 +89,12 @@ def update_calories():
 @login_required
 def update_goals():
     check_csrf()
-    goals_text = request.form.get("goals", "")
+    goals_text = request.form.get("goals", "").strip()
+
+    if len(goals_text) > 1000:
+        flash("Goals are too long (max 1000 characters).")
+        return redirect(url_for("index"))
+
     users.update_user_goals(session["user_id"], goals_text)
     flash("Goals updated successfully.")
     return redirect(url_for("index"))

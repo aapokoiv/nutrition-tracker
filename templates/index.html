@@ -21,6 +21,15 @@
             <p class="message">{{ m }}</p>
         {% endfor %}
 
+        <div>
+            <h3>Your Goals:</h3>
+            <form action="{{ url_for('update_goals') }}" method="post">
+                <textarea name="goals" rows="5" cols="50" maxlength="1000">{{ goals }}</textarea>
+                <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+                <button type="submit">Save Goals</button>
+            </form>
+        </div>
+
         <h3>Your nutrition intake for today</h3>
 
         <div class="cal-prot-targets">

@@ -32,3 +32,37 @@ You can run the server like this:
 ```
 $ flask run
 ```
+
+## App Performance with Large Data
+
+Test dataset parameters:
+
+- **Users:** 10,000  
+- **Ingredients per user:** 200  
+- **Foods per user:** 100  
+- **Foods eaten daily per user:** 10  
+
+**Total records:**
+
+- Users: 10,000  
+- Ingredients: 2,000,000  
+- Foods: 1,000,000  
+- Daily eaten records: up to 100,000  
+
+---
+
+### Query Performance
+
+| Page / Query             | Typical Load Time |
+|--------------------------|-----------------|
+| Homepage                 | < 0.1 s         |
+| Profile                  | < 0.1 s         |
+| Foods page               | < 0.1 s         |
+| Add/Edit/Delete pages    | < 0.05 s        |
+| Search Public Foods      | ~1.2–1.5 s first load, < 0.1 s subsequent loads |
+
+- Most queries are **fast** due to indexing and precomputed totals in `Foods`.
+- The first load of search is slower because SQLite reads large table pages; subsequent loads are cached and fast.
+- Current performance is acceptable and realistic for this application.
+
+---
