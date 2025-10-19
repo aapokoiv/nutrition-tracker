@@ -2,16 +2,16 @@ import db
 
 def get_user_by_id(user_id):
     sql = """
-        SELECT id, username, password_hash, profile_pic, protein_target, calorie_target
+        SELECT id, username, password_hash, profile_pic, protein_target, calorie_target, goals
         FROM Users WHERE id = ?
     """
     result = db.query(sql, [user_id])
-    return result[0] if result else None
+    return dict(result[0]) if result else None
 
 def get_user_by_username(username):
     sql = "SELECT id, username, password_hash FROM Users WHERE username = ?"
     result = db.query(sql, [username])
-    return result[0] if result else None
+    return dict(result[0]) if result else None
 
 def create_user(username, password_hash):
     sql = "INSERT INTO Users (username, password_hash) VALUES (?, ?)"
@@ -32,7 +32,7 @@ def update_profile_picture(user_id, image):
 def get_profile_picture(user_id):
     sql = "SELECT profile_pic FROM Users WHERE id = ?"
     result = db.query(sql, [user_id])
-    return result[0][0] if result else None
+    return dict(result[0]).get("profile_pic") if result else None
 
 def user_nutrition_stats(user_id, days):
     return db.query("""
@@ -50,7 +50,7 @@ def user_nutrition_stats(user_id, days):
 def get_user_goals(user_id):
     sql = "SELECT goals FROM Users WHERE id = ?"
     result = db.query(sql, [user_id])
-    return result[0]["goals"] if result else ""
+    return dict(result[0]).get("goals", "") if result else ""
 
 def update_user_goals(user_id, goals_text):
     sql = "UPDATE Users SET goals = ? WHERE id = ?"

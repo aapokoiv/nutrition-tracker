@@ -43,11 +43,11 @@ def index():
 
     return render_template("index.html",
                            messages=messages,
-                           pt = user["protein_target"],
-                           ct = user["calorie_target"],
+                           pt = user.get("protein_target", 0),
+                           ct = user.get("calorie_target", 0),
                            pi = intake["total_protein"],
                            ci = intake["total_calories"],
-                           user = user["username"],
+                           user = user.get("username", ""),
                            user_id = user_id,
                            foods = eaten_today,
                            goals=user_goals)
@@ -106,8 +106,7 @@ def show_profile_pic(user_id):
     image = users.get_profile_picture(user_id)
     if image:
         return Response(image, mimetype="image/jpeg")
-    else:
-        return redirect(url_for("static", filename="profile_pics/default.jpg"))
+    return redirect(url_for("static", filename="profile_pics/default.jpg"))
 
 @app.route("/profile", methods=["GET", "POST"])
 @login_required
@@ -115,6 +114,11 @@ def profile():
     messages = get_flashed_messages()
     user_id = session["user_id"]
     user = users.get_user_by_id(user_id)
+
+    if not user:
+        session.pop("user_id", None)
+        flash("User not found.")
+        return redirect(url_for("login"))
 
     if request.method == "POST":
         if "profile_picture" in request.files:
@@ -146,7 +150,7 @@ def profile():
 
 def user_30day_summary(user_id):
     user = users.get_user_by_id(user_id)
-    protein_target = int(user["protein_target"] or 0)
+    protein_target = user.get("protein_target", 0)
 
     day_rows = users.user_nutrition_stats(user_id, 30)
     if not day_rows:
@@ -227,11 +231,11 @@ def login():
         filled = {"username": username}
 
         user = users.get_user_by_username(username)
-        if not user or not check_password_hash(user["password_hash"], password):
+        if not user or not check_password_hash(user.get("password_hash", ""), password):
             flash("Wrong username or password")
             return render_template("login.html", messages=get_flashed_messages(), filled=filled)
 
-        session["user_id"] = user["id"]
+        session["user_id"] = user.get("id", 0)
         session["csrf_token"] = secrets.token_hex(16)
         flash("Logged in successfully")
         return redirect(url_for("index"))

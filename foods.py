@@ -255,7 +255,7 @@ def eat_food(food_id):
     if not food:
         flash("Food not found.")
         return redirect(url_for("foods.all_foods"))
-    
+
     f = food[0]
     eaten_protein = (f["total_protein"] or 0.0) * qty
     eaten_calories = (f["total_calories"] or 0.0) * qty

@@ -20,7 +20,8 @@ def create_users(conn):
     for _ in range(NUM_USERS):
         username = random_string(12)
         password_hash = random_string(32)
-        cursor.execute("INSERT INTO Users (username, password_hash) VALUES (?, ?)", (username, password_hash))
+        cursor.execute("""INSERT INTO Users (username, password_hash)
+                       VALUES (?, ?)""", (username, password_hash))
     conn.commit()
 
 
@@ -47,7 +48,8 @@ def create_foods(conn):
     user_ids = [row[0] for row in cursor.fetchall()]
 
     for user_id in user_ids:
-        cursor.execute("SELECT id, protein, calories FROM Ingredients WHERE user_id = ?", (user_id,))
+        cursor.execute("""SELECT id, protein, calories
+                       FROM Ingredients WHERE user_id = ?""", (user_id,))
         ingredients = cursor.fetchall()
         if not ingredients:
             continue
@@ -57,21 +59,23 @@ def create_foods(conn):
             food_class = random.choice(FOOD_CLASSES)
 
             # 1-20 Ingredients per food
-            selected_ingredients = random.sample(ingredients, k=random.randint(1, min(20, len(ingredients))))
+            selected = random.sample(ingredients, k=random.randint(1, min(20, len(ingredients))))
 
-            total_protein = sum(i[1] for i in selected_ingredients)
-            total_calories = sum(i[2] for i in selected_ingredients)
+            total_protein = sum(i[1] for i in selected)
+            total_calories = sum(i[2] for i in selected)
 
             cursor.execute(
-                "INSERT INTO Foods (name, user_id, class, total_protein, total_calories) VALUES (?, ?, ?, ?, ?)",
+                """INSERT INTO Foods (name, user_id, class, total_protein, total_calories) 
+                VALUES (?, ?, ?, ?, ?)""",
                 (food_name, user_id, food_class, total_protein, total_calories)
             )
             food_id = cursor.lastrowid
 
-            for ing in selected_ingredients:
+            for ing in selected:
                 quantity = round(random.uniform(0.5, 2.0), 2)
                 cursor.execute(
-                    "INSERT INTO FoodIngredients (food_id, ingredient_id, quantity) VALUES (?, ?, ?)",
+                    """INSERT INTO FoodIngredients (food_id, ingredient_id, quantity) 
+                    VALUES (?, ?, ?)""",
                     (food_id, ing[0], quantity)
                 )
 
@@ -84,7 +88,8 @@ def create_eaten_history(conn):
     user_ids = [row[0] for row in cursor.fetchall()]
 
     for user_id in user_ids:
-        cursor.execute("SELECT id, total_protein, total_calories FROM Foods WHERE user_id = ?", (user_id,))
+        cursor.execute("""SELECT id, total_protein, total_calories
+                       FROM Foods WHERE user_id = ?""", (user_id,))
         foods = cursor.fetchall()
         if not foods:
             continue
@@ -99,9 +104,11 @@ def create_eaten_history(conn):
                 eaten_protein = food[1] * quantity
                 eaten_calories = food[2] * quantity
                 cursor.execute(
-                    """INSERT INTO Eaten (user_id, food_id, time, quantity, eaten_protein, eaten_calories) 
+                    """INSERT INTO Eaten
+                    (user_id, food_id, time, quantity, eaten_protein, eaten_calories) 
                     VALUES (?, ?, ?, ?, ?, ?)""",
-                    (user_id, food[0], date.strftime('%Y-%m-%d %H:%M:%S'), quantity, eaten_protein, eaten_calories)
+                    (user_id, food[0], date.strftime('%Y-%m-%d %H:%M:%S'),
+                     quantity, eaten_protein, eaten_calories)
                 )
 
     conn.commit()
