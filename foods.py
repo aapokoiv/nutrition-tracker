@@ -5,7 +5,6 @@ from auth import login_required, check_csrf
 
 foods_bp = Blueprint("foods", __name__, template_folder="templates")
 
-
 # --------- Foods page ----------
 @foods_bp.route("/foods", methods=["GET", "POST"])
 @login_required

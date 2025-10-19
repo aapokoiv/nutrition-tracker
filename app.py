@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 import secrets
-from flask import Flask, render_template, session, request
+import time
+from flask import Flask, render_template, session, request, g
 from flask import redirect, flash, get_flashed_messages, url_for, Response
 from werkzeug.security import generate_password_hash, check_password_hash
 import config
@@ -13,6 +14,17 @@ app = Flask(__name__)
 app.secret_key = config.SECRET_KEY
 app.register_blueprint(foods_bp)
 
+
+
+@app.before_request
+def before_request():
+    g.start_time = time.time()
+
+@app.after_request
+def after_request(response):
+    elapsed_time = round(time.time() - g.start_time, 2)
+    print("elapsed time:", elapsed_time, "s")
+    return response
 
 # -------- Homepage ----------
 @app.route("/")

@@ -24,7 +24,7 @@ def execute(sql, params=None):
         cur = con.execute(sql, params)
         con.commit()
         last_id = cur.lastrowid
-        g.last_insert_id = last_id  # store like original
+        g.last_insert_id = last_id
         return last_id
     except sqlite3.Error:
         flash("A database error occurred. Please try again later.")
